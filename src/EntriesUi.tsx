@@ -11,9 +11,12 @@ const EntriesUi = (props:EntryUiProps)=> {
 
     return(
       <div className="flex flex-col px-10">
-        <CollectionHeader handleAddEntryClick={props.handleWriteEntryClick}/>
+        <CollectionHeader />
         <FilterArea />
-        <CollectionDisplay collection={props.collection}/>
+        <CollectionDisplay 
+            collection={props.collection} 
+            handleAddEntryClick={props.handleWriteEntryClick}
+        />
       </div>
     )
 }
@@ -23,18 +26,11 @@ export default EntriesUi
 
 
 
-interface headerProps{
-    handleAddEntryClick:any
-}
 
-const CollectionHeader = (props:headerProps) =>{
+const CollectionHeader = () =>{
     return(
-        <div className="flex justify-between ">
-            <h1 className="text-4xl">Archive</h1>
-            <SmallButton 
-                label={"Create"}
-                onClick={props.handleAddEntryClick}
-            />
+        <div className="px-10">
+            <h1 className="text-4xl ">Archive</h1>
         </div>
     )
 }
@@ -42,25 +38,36 @@ const CollectionHeader = (props:headerProps) =>{
 const FilterArea = () =>{
     return (
         <div className="py-4">
-            <form action="" className="flex flex-row justify-between">
-                <FilterInputArea elementId="category-filter" label="Category"/>
-                <FilterInputArea elementId="keyword-filter" label="Keyword"/>
-                <FilterInputArea elementId="title-filter" label="Title"/>
-            </form>
+            <div className="hover:bg-gray-900 border rounded">
+                <p className="text-center pb-3 pt-1">Filter View</p>
+                <form action="" className="flex flex-row justify-between pb-4 px-5">
+                    <FilterInputArea elementId="category-filter" label="Category"/>
+                    <FilterInputArea elementId="keyword-filter" label="Keyword"/>
+                    <FilterInputArea elementId="title-filter" label="Title"/>
+                </form>
+            </div>
         </div>
     )
 }
 
 interface CollectionDisplayProps{
-    collection:entryDefs.Entry[]
+    collection:entryDefs.Entry[],
+    handleAddEntryClick:any
 }
 const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
 
     return (
         <div>
-            <h2>Entries</h2>
-            <ul className="border">
+            <div className="flex flex-row justify-between px-10 pb-1">
+                <h2 className="">Entries</h2>
+                <SmallButton 
+                    label={"Create New"}
+                    onClick={props.handleAddEntryClick}
+                />
+            </div>
+            
+            <ul className="border rounded">
                 {props.collection.map((entry)=>{
                     return (
                         <li  key={entry.id}>
@@ -80,7 +87,7 @@ interface entryProps{
 }
 const EntryElement = (props:entryProps) => {
     return(
-        <div className="hover:border px-1">
+        <div className="hover:border px-1 hover:bg-blue-900">
             <span>
                 {props.entry.dateCreated.getMonth()}/
                 {props.entry.dateCreated.getDate()}/

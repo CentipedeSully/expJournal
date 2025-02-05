@@ -23,7 +23,7 @@ export const SmallButton = (props:ButtonProps) =>{
     return (
         <div className="">
             <button 
-                className="bg-blue-300 text-bluesteel  hover:bg-white hover:text-zinc-900 rounded-2xl px-4"
+                className="bg-gray-400 text-bluesteel text-sm  hover:bg-white hover:text-zinc-900 rounded px-4"
                 onClick={props.onClick}>
                     {props.label}
             </button>
