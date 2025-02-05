@@ -1,4 +1,7 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-
-
+@theme {
+    --color-rust: #cf6f30;
+    --color-bluesteel: #0e151e;
+    --color-lightwheat: #ffd388;
+}

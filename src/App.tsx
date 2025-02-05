@@ -1,5 +1,7 @@
 import * as entryDefs from "./entry"
 import { useState } from "react"
+import Button from "./uiComponents"
+import WelcomeUi from "./WelcomeUi"
 
 function App() {
 
@@ -38,7 +40,18 @@ function App() {
   const [viewedEntry, setViewedEntry] = useState(collection[0])
 
   
-  
+
+    const enterViewScreen = () =>{
+      setUi("viewCollection")
+    }
+
+    const enterWriteScreen= () => {
+      setUi("viewEntry")
+    }
+
+
+
+
   switch(currentUi){
 
     case "viewCollection":
@@ -58,7 +71,10 @@ function App() {
     default:
       return (
         <div>
-          <Welcome />
+          <WelcomeUi 
+            username="Centisully" 
+            enterViewScreenHandler={enterViewScreen} 
+            enterWriteScreenHandler={enterWriteScreen}/>
         </div>
       )
   }
@@ -70,18 +86,6 @@ export default App
 
 
 //=========================================================================================
-//Welcome Screen
-const Welcome = ()=> {
-
-
-  return(
-    <div>
-      <Buttons />
-      <GreetingText name="CentiSully"/>
-      <Credit />
-    </div>
-  )
-}
 
 
 //=========================================================================================
@@ -138,40 +142,7 @@ const ViewEntry = (props:entryProps)=> {
 
 
 //=========================================================================================
+//=========================================================================================
+//
 
 
-const Buttons = () => {
-
-  return (
-   <div>
-    (buttons here)
-   </div>
-  )
-}
-
-
-
-
-interface greetingProps{
-  name:string
-}
-
-const GreetingText = (props:greetingProps) => {
-  
-
-  return (
-    <div>
-      <h1>Welcome</h1>
-      <h1>--= {props.name} =--</h1>
-    </div>
-    
-  )
-
-}
-
-const Credit = () => {
-
-  return  (
-    <p>Developed by CentiSully</p>
-  )
-}
