@@ -23,10 +23,10 @@ const WelcomeUi = (props:WelcomeProps) => {
 
             <div className="flex flex-col space-y-2 pt-20 pb-10">
                 <IconButton 
-                    label="Add Entry"
+                    label="Create Entry"
                     onClick={props.enterWriteScreenHandler}/>
                 <IconButton 
-                    label="View Collection"
+                    label="View Archive"
                     onClick={props.enterViewScreenHandler}/>
             </div>
 

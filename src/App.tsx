@@ -1,7 +1,7 @@
-import * as entryDefs from "./entry"
 import { useState } from "react"
-import Button from "./uiComponents"
 import WelcomeUi from "./WelcomeUi"
+import EntriesUi from "./EntriesUi"
+
 
 function App() {
 
@@ -57,14 +57,16 @@ function App() {
     case "viewCollection":
       return (
         <div>
-          <Collection collection={collection}/>
+          <EntriesUi 
+            collection={collection} 
+            handleWriteEntryClick={enterWriteScreen}/>
         </div>
       )
 
     case "viewEntry":
       return (
         <div>
-          <ViewEntry entry={viewedEntry} />
+          <p>Viewing Entry...</p>
         </div>
       )
 
@@ -86,36 +88,8 @@ export default App
 
 
 //=========================================================================================
-
-
-//=========================================================================================
-//=========================================================================================
-//View Collection Screen
-
-const Collection = (props:entryDefs.EntryCollection)=> {
-
-  
-
-  return(
-    <div>
-      <button>create entry</button>
-      <p>Currently Viewing Collection...</p>
-      <ul>
-        {props.collection.map((entry)=>{
-          return (
-            <li key={entry.id}>{entry.title}</li>
-          )
-        })}
-      </ul>
-    </div>
-  )
-}
-
-
-
-//=========================================================================================
-//=========================================================================================
 //View Entry Screen
+/*
 interface entryProps{
   entry:entryDefs.Entry
 }
@@ -131,18 +105,7 @@ const ViewEntry = (props:entryProps)=> {
     </div>
   )
 }
+*/
 
-
-
-
-
-
-
-
-
-
-//=========================================================================================
-//=========================================================================================
-//
 
 
