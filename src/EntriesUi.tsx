@@ -1,5 +1,6 @@
 import * as entryDefs from "./entry"
-import AccentButton, { FilterInputArea, SmallButton } from "./uiComponents"
+import { InputArea, SmallButton } from "./uiComponents"
+import React from "react"
 
 
 interface EntryUiProps{
@@ -8,15 +9,16 @@ interface EntryUiProps{
 }
 const EntriesUi = (props:EntryUiProps)=> {
 
-
     return(
       <div className="flex flex-col px-10">
+        
         <CollectionHeader />
         <FilterArea />
         <CollectionDisplay 
             collection={props.collection} 
             handleAddEntryClick={props.handleWriteEntryClick}
         />
+        
       </div>
     )
 }
@@ -41,9 +43,9 @@ const FilterArea = () =>{
             <div className="hover:bg-gray-900 border rounded">
                 <p className="text-center pb-3 pt-1">Filter View</p>
                 <form action="" className="flex flex-row justify-between pb-4 px-5">
-                    <FilterInputArea elementId="category-filter" label="Category"/>
-                    <FilterInputArea elementId="keyword-filter" label="Keyword"/>
-                    <FilterInputArea elementId="title-filter" label="Title"/>
+                    <InputArea elementId="category-filter" label="Category"/>
+                    <InputArea elementId="keyword-filter" label="Keyword"/>
+                    <InputArea elementId="title-filter" label="Title"/>
                 </form>
             </div>
         </div>
@@ -98,3 +100,6 @@ const EntryElement = (props:entryProps) => {
         </div>
     )
 }
+
+
+

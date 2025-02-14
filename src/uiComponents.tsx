@@ -32,16 +32,16 @@ export const SmallButton = (props:ButtonProps) =>{
 }
 
 
-interface FilterProps{
+interface InputProps{
     elementId:string,
     label:string
 }
 
-export const FilterInputArea = (props:FilterProps) => {
+export const InputArea = (props:InputProps) => {
     return (
         <div className="flex flex-col items-center">
-            <input id={props.elementId} type="text" className="bg-gray-700 rounded"/>
-            <label htmlFor={props.elementId}>{props.label}</label>
+            <input id={props.elementId} type="text" className=" bg-gray-700 rounded"/>
+            <label className="text-sm" htmlFor={props.elementId}>{props.label}</label>
         </div>
     )
 }

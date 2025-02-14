@@ -2,7 +2,6 @@ import { useState } from "react"
 import WelcomeUi from "./WelcomeUi"
 import EntriesUi from "./EntriesUi"
 
-
 function App() {
 
   const collection= [
@@ -87,25 +86,6 @@ export default App
 
 
 
-//=========================================================================================
-//View Entry Screen
-/*
-interface entryProps{
-  entry:entryDefs.Entry
-}
-
-const ViewEntry = (props:entryProps)=> {
-
-
-  return(
-    <div>
-      <p>{props.entry.dateCreated.getDate()}</p>
-      <h1>{props.entry.title}</h1>
-      <p>{props.entry.content}</p>
-    </div>
-  )
-}
-*/
 
 
 
