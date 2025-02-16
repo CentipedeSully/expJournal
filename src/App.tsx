@@ -1,9 +1,14 @@
 import { useState } from "react"
 import WelcomeUi from "./WelcomeUi"
 import EntriesUi from "./EntriesUi"
+import EntryOverlay from "./EntryOverlay"
+
+
+
 
 function App() {
 
+  
   const collection= [
     
     {
@@ -32,23 +37,32 @@ function App() {
     }
   ]
 
+  
 
 
   const [currentUi, setUi] = useState("welcome")
   const [entries,setCollection] = useState(collection)
   const [viewedEntry, setViewedEntry] = useState(collection[0])
+  const [showEntryWindow,setShowEntryWindow] = useState(false)
+  
+    
+  const enterViewScreen = () =>{
+    setUi("viewCollection")
+  }
+
+  const enterWriteScreen= () => {
+    setUi("viewEntry")
+  }
+
+  const hideEntryModal = () =>{
+    setShowEntryWindow(false)
+  }
+
+  const showEntryModal = () =>{
+    setShowEntryWindow(true)
+  }
 
   
-
-    const enterViewScreen = () =>{
-      setUi("viewCollection")
-    }
-
-    const enterWriteScreen= () => {
-      setUi("viewEntry")
-    }
-
-
 
 
   switch(currentUi){
@@ -56,9 +70,13 @@ function App() {
     case "viewCollection":
       return (
         <div>
+          <EntryOverlay 
+            showWindow={showEntryWindow} 
+            entryObj={viewedEntry}
+            handleExit={hideEntryModal}/>
           <EntriesUi 
             collection={collection} 
-            handleWriteEntryClick={enterWriteScreen}/>
+            handleWriteEntryClick={showEntryModal}/>
         </div>
       )
 
@@ -72,10 +90,14 @@ function App() {
     default:
       return (
         <div>
+          <EntryOverlay 
+            showWindow={showEntryWindow} 
+            entryObj={viewedEntry}
+            handleExit={hideEntryModal}/>
           <WelcomeUi 
             username="Centisully" 
             enterViewScreenHandler={enterViewScreen} 
-            enterWriteScreenHandler={enterWriteScreen}/>
+            enterWriteScreenHandler={showEntryModal}/>
         </div>
       )
   }
