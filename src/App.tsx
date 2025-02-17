@@ -2,6 +2,7 @@ import { useState } from "react"
 import WelcomeUi from "./WelcomeUi"
 import EntriesUi from "./EntriesUi"
 import EntryOverlay from "./EntryOverlay"
+import { Entry } from "./entry"
 
 
 
@@ -17,7 +18,7 @@ function App() {
       content:"hoard all the treasure.",
       categories: ["goals","test entries"],
       keywords:["treasure","hoard"],
-      dateCreated: new Date()
+      dateMMDDYYYY: "02/16/2025"
     },
     {
       id:'0001',
@@ -25,7 +26,7 @@ function App() {
       content:"Hello world! This it the first entry! Woo!",
       categories: ["milestones","test entries"],
       keywords:["hello world","first"],
-      dateCreated: new Date()
+      dateMMDDYYYY: "02/16/2025"
     },
     {
       id:'0002',
@@ -33,7 +34,7 @@ function App() {
       content:"Chill\nChill\nWork\nChill",
       categories: ["Tasklists","test entries"],
       keywords:["todo"],
-      dateCreated: new Date()
+      dateMMDDYYYY: "02/16/2025"
     }
   ]
 
@@ -44,56 +45,80 @@ function App() {
   const [entries,setCollection] = useState(collection)
   const [viewedEntry, setViewedEntry] = useState(collection[0])
   const [showEntryWindow,setShowEntryWindow] = useState(false)
-  
+  const [editMode,setMode] = useState(false)
+  const [ignoreClicks, setIgnoreClicks] = useState(false)
+
+  document.getElementById('root').onpointerdown
+
+  const enterEditMode = () =>{
+      setMode(true)
+  }
+  const exitEditMode = () => {
+      setMode(false)
+  }
     
   const enterViewScreen = () =>{
     setUi("viewCollection")
   }
 
-  const enterWriteScreen= () => {
-    setUi("viewEntry")
-  }
-
   const hideEntryModal = () =>{
     setShowEntryWindow(false)
+    setIgnoreClicks(false)
   }
 
   const showEntryModal = () =>{
     setShowEntryWindow(true)
+    setIgnoreClicks(true)
   }
 
-  
+  const exitEditModeAndCloseModal = () =>{
+    exitEditMode()
+    hideEntryModal()
+  }
+
+  const updateEntry= (entry:Entry) =>{
+
+    const newCollection = entries.map((item)=> item.id === entry.id ? entry : item)
+    setCollection(newCollection)
+    setViewedEntry(entry)
+
+  } 
+
+  const pointerEventsClass = ignoreClicks ? " pointer-events-none" : " pointer-events-auto"
 
 
   switch(currentUi){
 
     case "viewCollection":
       return (
-        <div>
+        <div className={pointerEventsClass}>
           <EntryOverlay 
             showWindow={showEntryWindow} 
             entryObj={viewedEntry}
-            handleExit={hideEntryModal}/>
+            handleExit={exitEditModeAndCloseModal}
+            editMode={editMode}
+            handleEnterEdit={enterEditMode}
+            handleExitEdit={exitEditMode}
+            handleUpdateEntry={updateEntry}
+            />
           <EntriesUi 
-            collection={collection} 
+            collection={entries} 
             handleWriteEntryClick={showEntryModal}/>
-        </div>
-      )
-
-    case "viewEntry":
-      return (
-        <div>
-          <p>Viewing Entry...</p>
         </div>
       )
 
     default:
       return (
-        <div>
+        <div className={pointerEventsClass}>
           <EntryOverlay 
             showWindow={showEntryWindow} 
             entryObj={viewedEntry}
-            handleExit={hideEntryModal}/>
+            handleExit={exitEditModeAndCloseModal}
+            editMode={editMode}
+            handleEnterEdit={enterEditMode}
+            handleExitEdit={exitEditMode}
+            handleUpdateEntry={updateEntry}
+            />
           <WelcomeUi 
             username="Centisully" 
             enterViewScreenHandler={enterViewScreen} 

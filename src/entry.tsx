@@ -5,7 +5,7 @@ export interface Entry{
     keywords:string[],
     categories:string[],
     content:string,
-    dateCreated:Date,
+    dateMMDDYYYY:string,
     id:string
 }
 

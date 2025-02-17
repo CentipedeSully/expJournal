@@ -91,9 +91,7 @@ const EntryElement = (props:entryProps) => {
     return(
         <div className="hover:border px-1 hover:bg-blue-900">
             <span>
-                {props.entry.dateCreated.getMonth()}/
-                {props.entry.dateCreated.getDate()}/
-                {props.entry.dateCreated.getFullYear()}
+                {props.entry.dateMMDDYYYY}
             </span>
             <span> --------------- </span>
             <span>{props.entry.title}</span>
