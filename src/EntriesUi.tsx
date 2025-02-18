@@ -1,22 +1,97 @@
 import * as entryDefs from "./entry"
 import { InputArea, SmallButton } from "./uiComponents"
 import React from "react"
+import { useState, useEffect } from "react"
 
 
 interface EntryUiProps{
     collection:entryDefs.Entry[],
-    handleWriteEntryClick:any
+    handleWriteNewEntry:any,
+    handleClickEntry:any
 }
 const EntriesUi = (props:EntryUiProps)=> {
+
+    const [viewableEntries,setView] = useState(props.collection)
+    const [titleFilter,setTitleFilter] = useState('')
+    const [keywordCollection,setKeywordCollection] = useState([])
+    const [categoryCollection,setCategoryCollection] = useState([])
+
+
+
+
+    const addKeyword = (newKeyword:string) =>{
+        if (!keywordCollection.includes(newKeyword)){
+            const newKeyCollection = keywordCollection.concat(newKeyword)
+            setKeywordCollection(newKeyCollection)
+
+            //const newView = props.collection.filter((entry)=>{ return entry.keywords.includes(newKeyword)})
+            //setView(newView)
+
+            //refilter the view
+            //...
+        }
+    } 
+    const removeKeyword = (keyword:string) => {
+        if (keywordCollection.includes(keyword)){
+            const newKeyCollection = keywordCollection.filter((word)=> word!==keyword)
+            setKeywordCollection(newKeyCollection)
+            
+            //refilter the view
+            //...
+        }
+    }
+
+    const addCategory = (newCategory:string) => {
+        if (!categoryCollection.includes(newCategory)){
+            const newCatCollection = categoryCollection.concat(newCategory)
+            setCategoryCollection(newCatCollection)
+
+            
+            //refilter
+            //...
+        }
+    }
+
+    const removeCategory = (category:string) => {
+        if (categoryCollection.includes(category)){
+            const newCatCollection = categoryCollection.filter((word)=> word!==category)
+            setCategoryCollection(newCatCollection)
+
+            //refilter
+            //...
+        }
+
+        
+    }
+
+    const updateTitleFilter = (newTitle:string) => {
+        const title = newTitle.toLowerCase()
+        console.log("title update detected:", title)
+        setTitleFilter(title)
+
+        //refilter the view
+        //...
+        const newView = props.collection.filter((entry)=>{ return entry.title.toLowerCase().includes(title) })
+        setView(newView)
+    }
+
 
     return(
       <div className="flex flex-col px-10">
         
         <CollectionHeader />
-        <FilterArea />
+        <FilterArea
+            handleTitleInputChange={updateTitleFilter}
+            handleAddCategoryToFilter={addCategory}
+            handleRemoveCategoryFromFilter={removeCategory}
+            handleAddKeywordToFilter={addKeyword}
+            handleRemoveKeywordFromFilter={removeKeyword}
+            appliedCategories={categoryCollection}
+            appliedKeywords={keywordCollection}/>
         <CollectionDisplay 
-            collection={props.collection} 
-            handleAddEntryClick={props.handleWriteEntryClick}
+            collection={viewableEntries} 
+            handleNewEntryClick={props.handleWriteNewEntry}
+            handleEntryClick={props.handleClickEntry}
         />
         
       </div>
@@ -37,16 +112,196 @@ const CollectionHeader = () =>{
     )
 }
 
-const FilterArea = () =>{
+interface filterProps{
+    handleTitleInputChange:any,
+    handleAddKeywordToFilter:any,
+    handleRemoveKeywordFromFilter:any,
+    handleAddCategoryToFilter:any,
+    handleRemoveCategoryFromFilter:any,
+    appliedCategories:string[],
+    appliedKeywords:string[],
+
+}
+
+const FilterArea = (props:filterProps) =>{
+
+
+    const [catVisibility,setCatVisibility] = useState(props.appliedCategories.length > 0)
+    const [keyVisibility,setKeyVisibility] = useState(props.appliedKeywords.length > 0)
+    const [keyword,setKeyword] = useState('')
+    const [category,setCategory] = useState('')
+
+    const updateKeyword = (event:any) =>{
+        const newKeyword = event.target.value
+        setKeyword(newKeyword)
+    }
+
+    const updateCategory = (event:any) =>{
+        const newCategory = event.target.value
+        setCategory(newCategory)
+    }
+    
+    useEffect(()=>{
+        setCatVisibility(props.appliedCategories.length > 0)
+        setKeyVisibility(props.appliedKeywords.length > 0)
+    }, [props.appliedCategories, props.appliedKeywords])
+
+    const visibilityClass = catVisibility||keyVisibility ? " hidden" : " visible"
+    const categoryVisibility = catVisibility ? " visible" : " hidden"
+    const keywordsVisibility = keyVisibility ? " visible" : " hidden"
+
+    const throwNewTitle = (event:any) =>{
+        const newTitle = event.target.value
+        props.handleTitleInputChange(newTitle)
+    }
+
+    const removeKeywordLabel = (event:any) =>{
+        const closest = event.target.closest("li")
+        props.handleRemoveKeywordFromFilter(closest.id.slice("keyword-filter-item-".length))
+        
+    }
+
+    const removeCategoryLabel = (event:any) =>{
+        const closest = event.target.closest("li")
+        props.handleRemoveCategoryFromFilter(closest.id.slice("category-filter-item-".length))
+    }
+
+    const addKeyword = () =>{
+        props.handleAddKeywordToFilter(keyword)
+    }
+
+    const addCategory= () =>{
+        props.handleAddCategoryToFilter(category)
+    }
+
     return (
-        <div className="py-4">
-            <div className="hover:bg-gray-900 border rounded">
-                <p className="text-center pb-3 pt-1">Filter View</p>
-                <form action="" className="flex flex-row justify-between pb-4 px-5">
-                    <InputArea elementId="category-filter" label="Category"/>
-                    <InputArea elementId="keyword-filter" label="Keyword"/>
-                    <InputArea elementId="title-filter" label="Title"/>
-                </form>
+        <div className="py-4 ">
+            <div className="border rounded">
+
+                <div className="hover:bg-gray-900">
+                    <p className="text-center pt-1">Filter View</p>
+                    <form action="" className="flex flex-col py-3 gap-2">
+
+                        <div>
+                            <div className="flex flex-col items-center">
+                                <input 
+                                    id='title-filter-input' 
+                                    type="text" 
+                                    className=" bg-gray-700 rounded"
+                                    onChange={throwNewTitle}
+                                    />
+                                <label className="text-sm" htmlFor='title-filter-input'>Title</label>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-row justify-around">
+
+                            <div className="flex flex-col items-center">
+                                <div className="flex flex-row gap-1 ">
+                                    <input 
+                                        id="category-filter-input" 
+                                        type="text" 
+                                        className=" bg-gray-700 rounded "
+                                        onChange={updateCategory}/>
+                                    <button 
+                                        className='rounded bg-blue-800 hover:bg-blue-950 px-2 text-sm'
+                                        onClick={addCategory}
+                                        type="button"
+                                    >+</button>
+                                </div>
+                                <label className="text-sm" htmlFor='category-filter-input'>Category</label>
+                            </div>
+
+                            <div className="flex flex-col items-center">
+                                <div className="flex flex-row gap-1">
+                                    <input 
+                                        id='keyword-filter-input' 
+                                        type="text" 
+                                        className=" bg-gray-700 rounded"
+                                        onChange={updateKeyword}/>
+                                    <button 
+                                        className='rounded bg-blue-800 hover:bg-blue-950 px-2 text-sm'
+                                        onClick={addKeyword}
+                                        type="button"
+                                        >+</button>
+                                    </div>
+                                <label className="text-sm" htmlFor='keyword-filter-input'>Keyword</label>
+                            </div>
+
+                        </div>
+
+                    </form>
+                </div>
+                
+                <hr />
+
+                <div className="py-3 hover:bg-gray-900">
+                    <p className={"text-center" + visibilityClass}>-No Labels Applied-</p>
+                    <div className="flex flex-row justify-around text-center">
+
+                        <div className={"w-50" + categoryVisibility}>
+                            <p>Categories</p>
+                            <ul>
+                            { props.appliedCategories.map((word)=>{ 
+
+                                const elementId = 'category-filter-item-' + word
+                                return(
+
+                                    <li 
+                                        className='text-sm hover:bg-blue-900'
+                                        key={word}
+                                        id={elementId}>
+                                        <div className="flex flex-row justify-center gap-1 items-center">
+                                            <span>
+                                                {word}
+                                            </span>
+                                            <span>
+                                                <button 
+                                                    className="rounded px-1  hover:bg-red-950"
+                                                    onClick={removeCategoryLabel}
+                                                    type="button"
+                                                >( x )</button>
+                                            </span>
+                                        </div>
+                                        
+                                    </li>
+                                )})}
+                            </ul>
+                        </div>
+
+                        <div className={"w-50" + keywordsVisibility}>
+                            <p>Keywords</p>
+                            <ul className="">
+                                { props.appliedKeywords.map((word)=>{ 
+
+                                    const elementId = 'keyword-filter-item-' + word
+                                    return(
+
+                                        <li 
+                                            className='text-sm hover:bg-blue-900'
+                                            key={word}
+                                            id={elementId}>
+                                            <div className="flex flex-row justify-center gap-1 items-center">
+                                                <span>
+                                                    {word}
+                                                </span>
+                                                <span>
+                                                    <button 
+                                                        className="rounded px-1  hover:bg-red-950"
+                                                        onClick={removeKeywordLabel}
+                                                        type="button"
+                                                    >( x )</button>
+                                                </span>
+                                            </div>
+                                            
+                                        </li>
+                                )})}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                                
+                
             </div>
         </div>
     )
@@ -54,7 +309,8 @@ const FilterArea = () =>{
 
 interface CollectionDisplayProps{
     collection:entryDefs.Entry[],
-    handleAddEntryClick:any
+    handleNewEntryClick:any,
+    handleEntryClick:any
 }
 const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
@@ -65,7 +321,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                 <h2 className="">Entries</h2>
                 <SmallButton 
                     label={"Create New"}
-                    onClick={props.handleAddEntryClick}
+                    onClick={props.handleNewEntryClick}
                 />
             </div>
             
@@ -73,7 +329,10 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                 {props.collection.map((entry)=>{
                     return (
                         <li  key={entry.id}>
-                            <EntryElement entry={entry}/>
+                            <EntryElement 
+                                entry={entry}
+                                onClick={props.handleEntryClick}
+                                />
                         </li>
                         
                     )
@@ -86,10 +345,18 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
 interface entryProps{
     entry:entryDefs.Entry
+    onClick:any
 }
 const EntryElement = (props:entryProps) => {
+
+    const throwEntry = () =>{
+        props.onClick(props.entry)
+    }
+
     return(
-        <div className="hover:border px-1 hover:bg-blue-900">
+        <div 
+            className="hover:border px-1 hover:bg-blue-900"
+            onClick={throwEntry}>
             <span>
                 {props.entry.dateMMDDYYYY}
             </span>

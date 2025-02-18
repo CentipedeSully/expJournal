@@ -34,13 +34,19 @@ export const SmallButton = (props:ButtonProps) =>{
 
 interface InputProps{
     elementId:string,
-    label:string
+    label:string,
+    onChange:any
 }
 
 export const InputArea = (props:InputProps) => {
     return (
         <div className="flex flex-col items-center">
-            <input id={props.elementId} type="text" className=" bg-gray-700 rounded"/>
+            <input 
+                id={props.elementId} 
+                type="text" 
+                className=" bg-gray-700 rounded"
+                onChange={props.onChange}
+                />
             <label className="text-sm" htmlFor={props.elementId}>{props.label}</label>
         </div>
     )

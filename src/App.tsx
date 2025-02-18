@@ -39,11 +39,19 @@ function App() {
   ]
 
   
+  const emptyEntry:Entry = {
+    id:'',
+    title:"",
+    content:"",
+    categories: [],
+    keywords:[],
+    dateMMDDYYYY: ''
 
+  }
 
   const [currentUi, setUi] = useState("welcome")
   const [entries,setCollection] = useState(collection)
-  const [viewedEntry, setViewedEntry] = useState(collection[0])
+  const [viewedEntry, setViewedEntry] = useState(emptyEntry)
   const [showEntryWindow,setShowEntryWindow] = useState(false)
   const [editMode,setMode] = useState(false)
   const [ignoreClicks, setIgnoreClicks] = useState(false)
@@ -66,7 +74,8 @@ function App() {
     setIgnoreClicks(false)
   }
 
-  const showEntryModal = () =>{
+  const showEmptyModal = () =>{
+    setViewedEntry(emptyEntry)
     setShowEntryWindow(true)
     setIgnoreClicks(true)
   }
@@ -76,13 +85,43 @@ function App() {
     hideEntryModal()
   }
 
-  const updateEntry= (entry:Entry) =>{
+  const saveEntryToApp= (entry:Entry) =>{
 
-    const newCollection = entries.map((item)=> item.id === entry.id ? entry : item)
-    setCollection(newCollection)
+    console.log("entry to save: ",entry)
+    const matchingEntry = entries.find((item)=> item.id === entry.id)
+    console.log("match: ",matchingEntry)
+    console.log("match found for save?",matchingEntry !== undefined)
+    if (matchingEntry !== undefined){
+      const newCollection = entries.map((item)=> item.id === entry.id ? entry : item)
+      setCollection(newCollection)
+      setViewedEntry(emptyEntry)
+    }
+    
+    else{
+
+      const newEntry:Entry = {
+        id: entries.length.toString(),
+        title:entry.title,
+        content:entry.content,
+        categories: entry.categories,
+        keywords: entry.keywords,
+        dateMMDDYYYY: entry.dateMMDDYYYY
+      }
+
+      const newCollection = entries.concat(newEntry)
+      setCollection(newCollection)
+      setViewedEntry(emptyEntry)
+    }
+    
+
+  }
+
+  const viewEntryInModal = (entry:Entry) => {
     setViewedEntry(entry)
-
-  } 
+    setShowEntryWindow(true)
+    setIgnoreClicks(true)
+    
+  }
 
   const pointerEventsClass = ignoreClicks ? " pointer-events-none" : " pointer-events-auto"
 
@@ -99,11 +138,12 @@ function App() {
             editMode={editMode}
             handleEnterEdit={enterEditMode}
             handleExitEdit={exitEditMode}
-            handleUpdateEntry={updateEntry}
+            handleSaveEntry={saveEntryToApp}
             />
           <EntriesUi 
             collection={entries} 
-            handleWriteEntryClick={showEntryModal}/>
+            handleWriteNewEntry={showEmptyModal}
+            handleClickEntry={viewEntryInModal}/>
         </div>
       )
 
@@ -117,12 +157,12 @@ function App() {
             editMode={editMode}
             handleEnterEdit={enterEditMode}
             handleExitEdit={exitEditMode}
-            handleUpdateEntry={updateEntry}
+            handleSaveEntry={saveEntryToApp}
             />
           <WelcomeUi 
             username="Centisully" 
             enterViewScreenHandler={enterViewScreen} 
-            enterWriteScreenHandler={showEntryModal}/>
+            enterWriteScreenHandler={showEmptyModal}/>
         </div>
       )
   }

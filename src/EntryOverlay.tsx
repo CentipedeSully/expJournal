@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom"
 import { Entry } from "./entry"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 
 const entryModalParent = document.getElementById('overlay-container')
@@ -15,7 +15,7 @@ const EntryOverlay = (props:SoloEntryModalProps) => {
                 editMode={props.editMode}
                 handleEnterEdit={props.handleEnterEdit}
                 handleExitEdit={props.handleExitEdit}
-                handleUpdateEntry={props.handleUpdateEntry}
+                handleSaveEntry={props.handleSaveEntry}
                 />,
             entryModalParent
         )
@@ -34,77 +34,79 @@ interface SoloEntryModalProps{
     handleEnterEdit:any,
     handleExitEdit:any,
     editMode:boolean,
-    handleUpdateEntry:any
+    handleSaveEntry:any
 }
   
 const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
-    const visibilityString = props.showWindow ? "visible " : "hidden "
-    const className = "z-10 w-3/4 h-3/4 mx-auto absolute inset-x-0 rounded " + visibilityString
-    const givenEntry:Entry = {
-        title:props.entryObj.title,
-        keywords:props.entryObj.keywords,
-        categories:props.entryObj.categories,
-        content:props.entryObj.content,
-        dateMMDDYYYY:props.entryObj.dateMMDDYYYY,
-        id:props.entryObj.id
-    }
+  const visibilityString = props.showWindow ? "visible " : "hidden "
+  const className = "z-10 w-3/4 h-3/4 mx-auto absolute inset-x-0 rounded " + visibilityString
 
-    const [title,setTitle] = useState(givenEntry.title)
-    const [date,setDate] = useState(givenEntry.dateMMDDYYYY)
-    const [content,setContent] = useState(givenEntry.content)
-    const [categories,setCategories] = useState(givenEntry.categories)
-    const [keywords,setKeywords] = useState(givenEntry.keywords)
+  const [originEntry,setOriginEntry] = useState(props.entryObj)
+  const [title,setTitle] = useState('')
+  const [date,setDate] = useState('')
+  const [content,setContent] = useState('')
+  const [categories,setCategories] = useState([])
+  const [keywords,setKeywords] = useState([])
+
+  const [changeDetected, setChangeDetected] = useState(false)
+
+  useEffect(()=>{
+    setOriginEntry(props.entryObj)
+    setTitle(props.entryObj.title)
+    setDate(props.entryObj.dateMMDDYYYY)
+    setContent(props.entryObj.content)
+    setCategories(props.entryObj.categories)
+    setKeywords(props.entryObj.keywords)
+  },[props.entryObj])
 
 
-    const [changeDetected, setChangeDetected] = useState(false)
-
-    const detectChange = ()=>{
-        setChangeDetected(true)
-    }
-    const clearDetectedChanges = ()=>{
-        setChangeDetected(false)
-    }
+  const detectChange = ()=>{
+    setChangeDetected(true)
+  }
+  const clearDetectedChanges = ()=>{
+    setChangeDetected(false)
+  }
 
     
 
-    const updateTitle = (event:any)=>{
-        const newTitle = event.target.value
-        setTitle(newTitle)
-        detectChange()
+  const updateTitle = (event:any)=>{
+    const newTitle = event.target.value
+    setTitle(newTitle)
+    detectChange()
+  }
+  const updateDate = (event:any)=>{
+    const newDate = event.target.value
+    setDate(newDate)
+    detectChange()
+  }
+  const updateContent = (event:any)=>{
+    const newContent = event.target.value
+    setContent(newContent)
+    detectChange()
+  }
+  const addKeyword= (word:string) => {
+    if (!keywords.includes(word)){
+      const newKeywords= keywords.concat(word)
+      setKeywords(newKeywords)
+      detectChange()
     }
-    const updateDate = (event:any)=>{
-        const newDate = event.target.value
-        setDate(newDate)
-        detectChange()
-    }
-    const updateContent = (event:any)=>{
-        const newContent = event.target.value
-        setContent(newContent)
-        detectChange()
-    }
-    const addKeyword= (word:string) => {
-        if (!keywords.includes(word)){
-          const newKeywords= keywords.concat(word)
-          setKeywords(newKeywords)
-          detectChange()
-        }
-    }
+  }
 
-    const removeKeyword= (word:string) =>{
-      if (keywords.includes(word)){
-        const newKeywords = keywords.filter((string)=> string!== word)
-        setKeywords(newKeywords)
-        detectChange()
-      }
+  const removeKeyword= (word:string) =>{
+    if (keywords.includes(word)){
+      const newKeywords = keywords.filter((string)=> string!== word)
+      setKeywords(newKeywords)
+      detectChange()
     }
+  }
 
-    const addCategory= (word:string) => {
-      if (!categories.includes(word)){
-        const newCategories= categories.concat(word)
-        setCategories(newCategories)
-        detectChange()
-      }
+  const addCategory= (word:string) => {
+    if (!categories.includes(word)){
+      const newCategories= categories.concat(word)
+      setCategories(newCategories)
+      detectChange()
+    }
   }
 
   const removeCategory= (word:string) =>{
@@ -115,81 +117,82 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     }
   }
 
-    const saveEntry = () =>{
-        clearDetectedChanges()
+  const saveEntry = () =>{
+    clearDetectedChanges()
 
-        const updatedEntry:Entry = {
-          title:title,
-          keywords:keywords,
-          categories:categories,
-          content:content,
-          dateMMDDYYYY:date,
-          id:props.entryObj.id
-        }
-
-        props.handleUpdateEntry(updatedEntry)
+    const updatedEntry:Entry = {
+      title:title,
+      keywords:keywords,
+      categories:categories,
+      content:content,
+      dateMMDDYYYY:date,
+      id:props.entryObj.id
     }
+
+    props.handleSaveEntry(updatedEntry)
+    props.handleExit()
+  }
 
     
 
-    return(
-        <div className={className }>
-            <div className="py-4 px-4 ">
-                <div className=" border rounded bg-bluesteel">
+  return(
+    <div className={className }>
+      <div className="py-4 px-4 ">
+        <div className=" border rounded bg-bluesteel">
 
-                <HeaderArea 
-                    handleBackClick={props.handleExit} 
-                    handleEnterEditMode={props.handleEnterEdit}
-                    handleExitEditMode={props.handleExitEdit}
-                    editMode={props.editMode}
-                />
-                <hr />
-                
-                <form action="" >
-                    <div className='grid grid-cols-2 py-3'>
-                    <CategoriesArea 
-                        editedStringList={categories}
-                        stringList={givenEntry.categories}
-                        editMode={props.editMode}
-                        addElement={addCategory}
-                        removeElement={removeCategory}
-                    />
-                    <KeywordsArea 
-                        editedStringList={keywords}
-                        stringList={givenEntry.keywords}
-                        editMode={props.editMode} 
-                        addElement={addKeyword}
-                        removeElement={removeKeyword}
-                    />
-                    </div>
-                    <hr />
-
-                    <TitleArea 
-                        editedTitle={title} 
-                        editedDate={date}
-                        title={givenEntry.title}
-                        date={givenEntry.dateMMDDYYYY}
-                        editMode={props.editMode}
-                        handleUpdateTitle={updateTitle}
-                        handleUpdateDate={updateDate}
-                    />
-                    <ContentArea 
-                        content={givenEntry.content}
-                        editedContent={content}
-                        editMode={props.editMode}
-                        handleUpdateContent={updateContent}
-                    /> 
-                </form>
-                <hr />
-
-                <FooterArea 
-                    unsavedChangesDetected={changeDetected}
-                    handleSave={saveEntry}
-                />
-                </div>
+          <HeaderArea 
+            handleBackClick={props.handleExit} 
+            handleEnterEditMode={props.handleEnterEdit}
+            handleExitEditMode={props.handleExitEdit}
+            editMode={props.editMode}
+          />
+          <hr />
+          
+          <form action="" >
+            <div className='grid grid-cols-2 py-3'>
+              <CategoriesArea 
+                editedStringList={categories}
+                stringList={originEntry.categories}
+                editMode={props.editMode}
+                addElement={addCategory}
+                removeElement={removeCategory}
+              />
+              <KeywordsArea 
+                editedStringList={keywords}
+                stringList={originEntry.keywords}
+                editMode={props.editMode} 
+                addElement={addKeyword}
+                removeElement={removeKeyword}
+              />
             </div>
+            <hr />
+
+            <TitleArea 
+              editedTitle={title} 
+              editedDate={date}
+              title={originEntry.title}
+              date={originEntry.dateMMDDYYYY}
+              editMode={props.editMode}
+              handleUpdateTitle={updateTitle}
+              handleUpdateDate={updateDate}
+            />
+            <ContentArea 
+              content={originEntry.content}
+              editedContent={content}
+              editMode={props.editMode}
+              handleUpdateContent={updateContent}
+            /> 
+          </form>
+          <hr />
+
+          <FooterArea 
+            unsavedChangesDetected={changeDetected}
+            handleSave={saveEntry}
+          />
         </div>
-    )
+      </div>
+    </div>
+  )
 }
 
 
@@ -454,13 +457,15 @@ const HeaderArea = (props:headerProps)=> {
         <div className={'flex flex-row items-end justify-between px-5 py-2' + showOnEditClass}>
             <input 
                 type="text" 
-                className='text-xl border rounded' 
+                className='text-xl border rounded text-center' 
                 value={props.editedTitle}
+                placeholder="Title"
                 onChange={props.handleUpdateTitle}/>
             <input 
                 type="text" 
-                className='border rounded' 
+                className='border rounded text-center' 
                 value={props.editedDate} 
+                placeholder="MM/DD/YYYY"
                 onChange={props.handleUpdateDate}/>
         </div>
         
@@ -481,7 +486,7 @@ const HeaderArea = (props:headerProps)=> {
       <div className='h-83  overflow-auto py-2 px-2'>
         <p className={showOnReadClass}>{props.content}</p>
         <textarea 
-            className={"block w-full h-full rounded border" + showOnEditClass} 
+            className={"block w-full h-full rounded border px-2" + showOnEditClass} 
             value={props.editedContent} 
             onChange={props.handleUpdateContent}/>
       </div>
