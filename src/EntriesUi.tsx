@@ -7,7 +7,7 @@ import { useState, useEffect } from "react"
 interface EntryUiProps{
     collection:entryDefs.Entry[],
     handleWriteNewEntry:any,
-    handleClickEntry:any
+    handleClickEntry:any,
 }
 const EntriesUi = (props:EntryUiProps)=> {
 
@@ -16,7 +16,9 @@ const EntriesUi = (props:EntryUiProps)=> {
     const [keywordCollection,setKeywordCollection] = useState([])
     const [categoryCollection,setCategoryCollection] = useState([])
 
-
+    useEffect(()=>{
+        UpdateView(titleFilter,keywordCollection,categoryCollection)
+    },[props.collection])
 
 
     const addKeyword = (newKeyword:string) =>{
@@ -24,11 +26,8 @@ const EntriesUi = (props:EntryUiProps)=> {
             const newKeyCollection = keywordCollection.concat(newKeyword)
             setKeywordCollection(newKeyCollection)
 
-            //const newView = props.collection.filter((entry)=>{ return entry.keywords.includes(newKeyword)})
-            //setView(newView)
-
             //refilter the view
-            //...
+            UpdateView(titleFilter,newKeyCollection,categoryCollection)
         }
     } 
     const removeKeyword = (keyword:string) => {
@@ -37,7 +36,7 @@ const EntriesUi = (props:EntryUiProps)=> {
             setKeywordCollection(newKeyCollection)
             
             //refilter the view
-            //...
+            UpdateView(titleFilter,newKeyCollection,categoryCollection)
         }
     }
 
@@ -48,7 +47,7 @@ const EntriesUi = (props:EntryUiProps)=> {
 
             
             //refilter
-            //...
+            UpdateView(titleFilter,keywordCollection,newCatCollection)
         }
     }
 
@@ -58,7 +57,7 @@ const EntriesUi = (props:EntryUiProps)=> {
             setCategoryCollection(newCatCollection)
 
             //refilter
-            //...
+            UpdateView(titleFilter,keywordCollection,newCatCollection)
         }
 
         
@@ -70,9 +69,27 @@ const EntriesUi = (props:EntryUiProps)=> {
         setTitleFilter(title)
 
         //refilter the view
-        //...
-        const newView = props.collection.filter((entry)=>{ return entry.title.toLowerCase().includes(title) })
-        setView(newView)
+        UpdateView(title,keywordCollection,categoryCollection)
+        
+    }
+
+    const UpdateView = (title:string,keywords:string[],categories:string[])=>{
+
+        const titleFilteredView = props.collection.filter((entry)=>{ 
+            return entry.title.toLowerCase().includes(title) })
+
+        console.log("Title filtered entries:",titleFilteredView)
+        
+        const titCatFilteredView = titleFilteredView.filter((entry)=>{
+            return categories.every(category => entry.categories.includes(category))})
+
+        console.log("Title & Category filtered entries:",titCatFilteredView)
+
+        const titCatKeyFilteredView = titCatFilteredView.filter((entry)=>{
+            return keywords.every(keyword => entry.keywords.includes(keyword))})
+
+        console.log("Title, Category, & Keyword filtered entries:",titCatKeyFilteredView)
+        setView(titCatKeyFilteredView)
     }
 
 
@@ -236,7 +253,7 @@ const FilterArea = (props:filterProps) =>{
                 <hr />
 
                 <div className="py-3 hover:bg-gray-900">
-                    <p className={"text-center" + visibilityClass}>-No Labels Applied-</p>
+                    <p className={"text-center" + visibilityClass}>-No Cat/Key Applied-</p>
                     <div className="flex flex-row justify-around text-center">
 
                         <div className={"w-50" + categoryVisibility}>
