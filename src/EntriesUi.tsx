@@ -1,5 +1,5 @@
 import * as entryDefs from "./entry"
-import { InputArea, SmallButton } from "./uiComponents"
+import { SmallButton } from "./uiComponents"
 import React from "react"
 import { useState, useEffect } from "react"
 

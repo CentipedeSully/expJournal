@@ -6,9 +6,7 @@ import { Entry } from "./entry"
 
 
 
-
-function App() {
-
+function App() { 
   
   const collection= [
     

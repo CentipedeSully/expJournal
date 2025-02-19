@@ -157,6 +157,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
                 addElement={addCategory}
                 removeElement={removeCategory}
               />
+              
               <KeywordsArea 
                 editedStringList={keywords}
                 stringList={originEntry.keywords}
@@ -166,22 +167,24 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
               />
             </div>
             <hr />
-
-            <TitleArea 
-              editedTitle={title} 
-              editedDate={date}
-              title={originEntry.title}
-              date={originEntry.dateMMDDYYYY}
-              editMode={props.editMode}
-              handleUpdateTitle={updateTitle}
-              handleUpdateDate={updateDate}
-            />
-            <ContentArea 
-              content={originEntry.content}
-              editedContent={content}
-              editMode={props.editMode}
-              handleUpdateContent={updateContent}
-            /> 
+            <div className="">
+              <TitleArea 
+                editedTitle={title} 
+                editedDate={date}
+                title={originEntry.title}
+                date={originEntry.dateMMDDYYYY}
+                editMode={props.editMode}
+                handleUpdateTitle={updateTitle}
+                handleUpdateDate={updateDate}
+              />
+              <ContentArea 
+                content={originEntry.content}
+                editedContent={content}
+                editMode={props.editMode}
+                handleUpdateContent={updateContent}
+              /> 
+            </div>
+            
           </form>
           <hr />
 
@@ -361,7 +364,7 @@ const HeaderArea = (props:headerProps)=> {
     }
 
     return(
-      <div className='text-center'>
+      <div className='text-center border-r'>
         <p className=''>-- Categories --</p>
         
         <div className={showOnReadMode}>
@@ -483,7 +486,7 @@ const HeaderArea = (props:headerProps)=> {
     const showOnReadClass = props.editMode ? " hidden" : " visible"
     const showOnEditClass = props.editMode ? " visible" : " hidden"
     return (
-      <div className='h-83  overflow-auto py-2 px-2'>
+      <div className='h-83  overflow-auto py-2 px-2 '>
         <p className={showOnReadClass}>{props.content}</p>
         <textarea 
             className={"block w-full h-full rounded border px-2" + showOnEditClass} 
