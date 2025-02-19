@@ -126,7 +126,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
       categories:categories,
       content:content,
       dateMMDDYYYY:date,
-      id:props.entryObj.id
+      _id:props.entryObj._id
     }
 
     props.handleSaveEntry(updatedEntry)

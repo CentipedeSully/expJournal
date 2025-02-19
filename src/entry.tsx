@@ -6,7 +6,7 @@ export interface Entry{
     categories:string[],
     content:string,
     dateMMDDYYYY:string,
-    id:string
+    _id:string
 }
 
 export interface EntryCollection{

@@ -1,14 +1,41 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import WelcomeUi from "./WelcomeUi"
 import EntriesUi from "./EntriesUi"
 import EntryOverlay from "./EntryOverlay"
 import { Entry } from "./entry"
+import axios from "axios"
 
-
+const entriesAddress = 'http://localhost:3001/expJournal'
 
 function App() { 
+
+  const getCollectionFromDb = () =>{
+    axios.get(entriesAddress).then((response)=>{
+      setCollection(response.data)
+    })
+    
+  }
+
   
-  const collection= [
+
+  /*
+  const putEntryToDb = (entry:Entry) =>{
+    axios.put().then( (response) =>{
+      getCollectionFromDb()
+    }
+      
+    )
+  } */
+
+  /*
+  const postEntryToDb = (entry:Entry)=>{
+    axios.post().then( (response)=>{
+      getCollectionFromDb()
+    })
+  } */
+ 
+
+  /*const collection= [
     
     {
       id:'0000',
@@ -34,11 +61,11 @@ function App() {
       keywords:["todo"],
       dateMMDDYYYY: "02/16/2025"
     }
-  ]
+  ]*/
 
   
   const emptyEntry:Entry = {
-    id:'',
+    _id:'',
     title:"",
     content:"",
     categories: [],
@@ -48,13 +75,15 @@ function App() {
   }
 
   const [currentUi, setUi] = useState("welcome")
-  const [entries,setCollection] = useState(collection)
+  const [entries,setCollection] = useState([])
   const [viewedEntry, setViewedEntry] = useState(emptyEntry)
   const [showEntryWindow,setShowEntryWindow] = useState(false)
   const [editMode,setMode] = useState(false)
   const [ignoreClicks, setIgnoreClicks] = useState(false)
 
-  document.getElementById('root').onpointerdown
+  useEffect(()=>{
+    getCollectionFromDb()
+  },[])
 
   const enterEditMode = () =>{
       setMode(true)
@@ -86,11 +115,11 @@ function App() {
   const saveEntryToApp= (entry:Entry) =>{
 
     console.log("entry to save: ",entry)
-    const matchingEntry = entries.find((item)=> item.id === entry.id)
+    const matchingEntry = entries.find((item)=> item._id === entry._id)
     console.log("match: ",matchingEntry)
     console.log("match found for save?",matchingEntry !== undefined)
     if (matchingEntry !== undefined){
-      const newCollection = entries.map((item)=> item.id === entry.id ? entry : item)
+      const newCollection = entries.map((item)=> item._id === entry._id ? entry : item)
       setCollection(newCollection)
       setViewedEntry(emptyEntry)
     }
@@ -98,7 +127,7 @@ function App() {
     else{
 
       const newEntry:Entry = {
-        id: entries.length.toString(),
+        _id: entries.length.toString(),
         title:entry.title,
         content:entry.content,
         categories: entry.categories,

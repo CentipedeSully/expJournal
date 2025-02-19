@@ -65,7 +65,6 @@ const EntriesUi = (props:EntryUiProps)=> {
 
     const updateTitleFilter = (newTitle:string) => {
         const title = newTitle.toLowerCase()
-        console.log("title update detected:", title)
         setTitleFilter(title)
 
         //refilter the view
@@ -78,17 +77,17 @@ const EntriesUi = (props:EntryUiProps)=> {
         const titleFilteredView = props.collection.filter((entry)=>{ 
             return entry.title.toLowerCase().includes(title) })
 
-        console.log("Title filtered entries:",titleFilteredView)
+        //console.log("Title filtered entries:",titleFilteredView)
         
         const titCatFilteredView = titleFilteredView.filter((entry)=>{
             return categories.every(category => entry.categories.includes(category))})
 
-        console.log("Title & Category filtered entries:",titCatFilteredView)
+        //console.log("Title & Category filtered entries:",titCatFilteredView)
 
         const titCatKeyFilteredView = titCatFilteredView.filter((entry)=>{
             return keywords.every(keyword => entry.keywords.includes(keyword))})
 
-        console.log("Title, Category, & Keyword filtered entries:",titCatKeyFilteredView)
+        //console.log("Title, Category, & Keyword filtered entries:",titCatKeyFilteredView)
         setView(titCatKeyFilteredView)
     }
 
@@ -345,7 +344,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
             <ul className="border rounded">
                 {props.collection.map((entry)=>{
                     return (
-                        <li  key={entry.id}>
+                        <li  key={entry._id}>
                             <EntryElement 
                                 entry={entry}
                                 onClick={props.handleEntryClick}

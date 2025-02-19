@@ -1,22 +1,15 @@
 import mongoose from "mongoose"
-import { Express } from "express"
-import * as http from 'node:http'
+import express from "express"
+import cors from "cors"
 
 
-const app = http.createServer((request:http.IncomingMessage,response:http.ServerResponse)=>{
-    response.writeHead(200, {'Content-Type': 'text/plain'})
-    response.end('Hello world')
-})
 
-const entryCollection = 'journalEntries'
-const password:string=''
-
-//mongoDb connection
-const uri = `mongodb+srv://sullivansmith057:${password}@exp-journal-cluster.9fy8r.mongodb.net/${entryCollection}?retryWrites=true&w=majority&appName=exp-journal-cluster`
+const dbEntryCollectionName:string = 'expJournal'
+const dbPassword:string=''
+const uri = `mongodb+srv://sullivansmith057:${dbPassword}@exp-journal-cluster.9fy8r.mongodb.net/${dbEntryCollectionName}?retryWrites=true&w=majority&appName=exp-journal-cluster`
 
 mongoose.set('strictQuery',false)
-//mongoose.connect(uri)
-//mongoose.connection.close()
+mongoose.connect(uri)
 
 const entrySchema = new mongoose.Schema({
     title: String,
@@ -27,6 +20,34 @@ const entrySchema = new mongoose.Schema({
 })
 
 const Entry = mongoose.model('Entry',entrySchema)
+const corsOptions = {
+    origin:`http://localhost:5173`,
+    optionsSuccessStatus: 200
+}
+
+
+const app = express()
+app.use(cors(corsOptions))
+
+//visit server
+app.get('/' ,(request,response)=>{
+    response.send('<h1>HelloWorld</h1>')
+})
+
+//get all entries in collection
+app.get(`/${dbEntryCollectionName}`, (request, response)=>{
+
+    Entry.find().then( result =>{
+        const entryCollection = result
+
+        response.json(entryCollection)
+        response.status(200)
+    })
+})
+
+
+
+
 
 
 
