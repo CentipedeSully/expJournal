@@ -1,15 +1,15 @@
-import mongoose from "mongoose"
+import mongoose, { connection } from "mongoose"
 import express from "express"
 import cors from "cors"
 
 
 
-const dbEntryCollectionName:string = 'expJournal'
+const dbEntryCollectionName:string = 'journalEntries'
 const dbPassword:string=''
-const uri = `mongodb+srv://sullivansmith057:${dbPassword}@exp-journal-cluster.9fy8r.mongodb.net/${dbEntryCollectionName}?retryWrites=true&w=majority&appName=exp-journal-cluster`
+const uri = `mongodb+srv://sullivansmith057:${dbPassword}@exp-journal-cluster.9fy8r.mongodb.net/?retryWrites=true&w=majority&appName=exp-journal-cluster`
 
 mongoose.set('strictQuery',false)
-mongoose.connect(uri)
+mongoose.connect(uri,{dbName:"expJournalApp"})
 
 const entrySchema = new mongoose.Schema({
     title: String,
@@ -17,9 +17,9 @@ const entrySchema = new mongoose.Schema({
     categories: [String],
     keywords: [String],
     dateMMDDYYYY: String
-})
+}, {collection: `${dbEntryCollectionName}`})
 
-const Entry = mongoose.model('Entry',entrySchema)
+const journalEntry = mongoose.model('journalEntry',entrySchema)
 const corsOptions = {
     origin:`http://localhost:5173`,
     optionsSuccessStatus: 200
@@ -27,6 +27,7 @@ const corsOptions = {
 
 
 const app = express()
+app.use(express.json())
 app.use(cors(corsOptions))
 
 //visit server
@@ -37,7 +38,7 @@ app.get('/' ,(request,response)=>{
 //get all entries in collection
 app.get(`/${dbEntryCollectionName}`, (request, response)=>{
 
-    Entry.find().then( result =>{
+    journalEntry.find({}).then( result =>{
         const entryCollection = result
 
         response.json(entryCollection)
@@ -45,6 +46,102 @@ app.get(`/${dbEntryCollectionName}`, (request, response)=>{
     })
 })
 
+//get a specific entry
+app.get(`/${dbEntryCollectionName}/:id`, (request, response)=>{
+
+    const id = request.params.id
+    console.log("requested id -> ",id)
+
+
+    journalEntry.find({_id: id}).then( result =>{
+        const entryCollection = result
+
+        if (entryCollection.length < 1)
+        {
+            response.status(400)
+            response.send("id doesn't exist in db")
+        }
+        else{
+            response.json(entryCollection)
+            response.status(200)
+        }
+        
+    })
+    .catch((error)=>{
+        console.log("an error occured:",error)
+        console.log("============== Server still running! ==============")
+        response.status(500)
+        response.end()
+    }
+        
+    )
+})
+
+
+
+async function findEntryInDB(entry:any){
+
+    console.log(`Searching db for entry with id '${entry._id}'...`)
+    const matchingEntry = await journalEntry.findById(entry._id)
+    console.log(`found entry: ${matchingEntry}`)
+    return matchingEntry
+} 
+
+async function updateEntry(entry:any){
+    //console.log(`Attempting to update entry with id '${entry._id}' in db...`)
+    //console.log("provided entry:",entry)
+    const updatedEntry = await journalEntry.findByIdAndUpdate(entry._id, {
+        title: entry.title,
+        content: entry.content,
+        dateMMDDYYYY: entry.dateMMDDYYYY,
+        categories: entry.categories,
+        keywords: entry.keywords 
+    }, {new:true})
+    //console.log("updated Entry:",updatedEntry)
+    return updatedEntry
+    
+}
+
+async function saveEntry(entry:any){
+    const newEntry = await journalEntry.create({
+        title: entry.title,
+        content: entry.content,
+        dateMMDDYYYY: entry.dateMMDDYYYY,
+        categories: entry.categories,
+        keywords: entry.keywords
+    })
+    console.log("new Entry created:",newEntry)
+    return newEntry
+}
+
+app.put(`/${dbEntryCollectionName}/:entry`, (req,res)=>{
+    const fullEntry = req.body
+
+    try {
+        updateEntry(fullEntry)
+        res.send(`update successful`).status(200)
+
+        
+    } catch (error) {
+        console.log("an error occured while attempting to update the entry within the db:",error)
+        console.log("============== Server still running! ============")
+        res.send(`an error occured while communicating with the db: ${error}`).status(500)
+    }
+})
+
+app.post(`/${dbEntryCollectionName}`,(req,res)=>{
+    const providedEntry = req.body
+    try{
+        const savedEntry = saveEntry(providedEntry)
+        res.json(savedEntry).status(200)
+    }
+    catch(error){ 
+        console.log("an error occured while attempting to create the entry within the db:",error)
+        console.log("============== Server still running! ============")
+        res.send(`an error occured while communicating with the db: ${error}`).status(500)
+    }
+    
+})
 
 
 

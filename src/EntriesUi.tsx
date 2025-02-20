@@ -8,6 +8,7 @@ interface EntryUiProps{
     collection:entryDefs.Entry[],
     handleWriteNewEntry:any,
     handleClickEntry:any,
+    handleRefreshClick:any
 }
 const EntriesUi = (props:EntryUiProps)=> {
 
@@ -108,6 +109,7 @@ const EntriesUi = (props:EntryUiProps)=> {
             collection={viewableEntries} 
             handleNewEntryClick={props.handleWriteNewEntry}
             handleEntryClick={props.handleClickEntry}
+            handleRefreshClick={props.handleRefreshClick}
         />
         
       </div>
@@ -326,7 +328,8 @@ const FilterArea = (props:filterProps) =>{
 interface CollectionDisplayProps{
     collection:entryDefs.Entry[],
     handleNewEntryClick:any,
-    handleEntryClick:any
+    handleEntryClick:any,
+    handleRefreshClick:any
 }
 const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
@@ -335,10 +338,18 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
         <div>
             <div className="flex flex-row justify-between px-10 pb-1">
                 <h2 className="">Entries</h2>
-                <SmallButton 
-                    label={"Create New"}
-                    onClick={props.handleNewEntryClick}
-                />
+                
+                <div className="flex flex-row space-x-2">
+                    <SmallButton 
+                        label={"Refresh"}
+                        onClick={props.handleRefreshClick}
+                    />
+                    <SmallButton 
+                        label={"Create New"}
+                        onClick={props.handleNewEntryClick}
+                    />
+                </div>
+                
             </div>
             
             <ul className="border rounded">

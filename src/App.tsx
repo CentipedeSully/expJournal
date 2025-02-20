@@ -5,7 +5,7 @@ import EntryOverlay from "./EntryOverlay"
 import { Entry } from "./entry"
 import axios from "axios"
 
-const entriesAddress = 'http://localhost:3001/expJournal'
+const entriesAddress = 'http://localhost:3001/journalEntries'
 
 function App() { 
 
@@ -16,53 +16,24 @@ function App() {
     
   }
 
-  
-
-  /*
-  const putEntryToDb = (entry:Entry) =>{
-    axios.put().then( (response) =>{
-      getCollectionFromDb()
-    }
-      
-    )
-  } */
-
-  /*
-  const postEntryToDb = (entry:Entry)=>{
-    axios.post().then( (response)=>{
-      getCollectionFromDb()
+  const getEntryFromDb = (id:string) =>{
+    axios.get(entriesAddress +`/${id}`).then((response)=>{
+      console.log("found item:",response)
     })
-  } */
- 
+    .catch((error)=>{
+      console.log("something unexpected happened:",error)
+    })
+  }
 
-  /*const collection= [
-    
-    {
-      id:'0000',
-      title:"hoard",
-      content:"hoard all the treasure.",
-      categories: ["goals","test entries"],
-      keywords:["treasure","hoard"],
-      dateMMDDYYYY: "02/16/2025"
-    },
-    {
-      id:'0001',
-      title:"Hello World",
-      content:"Hello world! This it the first entry! Woo!",
-      categories: ["milestones","test entries"],
-      keywords:["hello world","first"],
-      dateMMDDYYYY: "02/16/2025"
-    },
-    {
-      id:'0002',
-      title:"Feb2025 ToDo",
-      content:"Chill\nChill\nWork\nChill",
-      categories: ["Tasklists","test entries"],
-      keywords:["todo"],
-      dateMMDDYYYY: "02/16/2025"
-    }
-  ]*/
+  const updateEntryInDb = (entry:Entry) =>{
+    axios.put(entriesAddress+`/${entry._id}`, entry)
+  }
+  
+  const addEntryToDb = (entry:any)=>{
+    axios.post(entriesAddress,entry)
+  } 
 
+  
   
   const emptyEntry:Entry = {
     _id:'',
@@ -115,19 +86,17 @@ function App() {
   const saveEntryToApp= (entry:Entry) =>{
 
     console.log("entry to save: ",entry)
-    const matchingEntry = entries.find((item)=> item._id === entry._id)
-    console.log("match: ",matchingEntry)
-    console.log("match found for save?",matchingEntry !== undefined)
-    if (matchingEntry !== undefined){
-      const newCollection = entries.map((item)=> item._id === entry._id ? entry : item)
-      setCollection(newCollection)
-      setViewedEntry(emptyEntry)
+    if (entry._id.length > 0){
+      updateEntryInDb(entry)
+      const newTemporaryLocalCollection = entries.filter(item => item._id !== entry._id)
+      setCollection(newTemporaryLocalCollection)
+      setTimeout(getCollectionFromDb,2000)
     }
+      
     
     else{
 
-      const newEntry:Entry = {
-        _id: entries.length.toString(),
+      const newEntry = {
         title:entry.title,
         content:entry.content,
         categories: entry.categories,
@@ -135,9 +104,8 @@ function App() {
         dateMMDDYYYY: entry.dateMMDDYYYY
       }
 
-      const newCollection = entries.concat(newEntry)
-      setCollection(newCollection)
-      setViewedEntry(emptyEntry)
+      addEntryToDb(newEntry)
+      setTimeout(getCollectionFromDb,2000)
     }
     
 
@@ -170,7 +138,8 @@ function App() {
           <EntriesUi 
             collection={entries} 
             handleWriteNewEntry={showEmptyModal}
-            handleClickEntry={viewEntryInModal}/>
+            handleClickEntry={viewEntryInModal}
+            handleRefreshClick={getCollectionFromDb}/>
         </div>
       )
 
