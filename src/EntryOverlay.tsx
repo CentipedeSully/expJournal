@@ -16,6 +16,7 @@ const EntryOverlay = (props:SoloEntryModalProps) => {
                 handleEnterEdit={props.handleEnterEdit}
                 handleExitEdit={props.handleExitEdit}
                 handleSaveEntry={props.handleSaveEntry}
+                handleDeleteEntry={props.handleDeleteEntry}
                 />,
             entryModalParent
         )
@@ -34,7 +35,8 @@ interface SoloEntryModalProps{
     handleEnterEdit:any,
     handleExitEdit:any,
     editMode:boolean,
-    handleSaveEntry:any
+    handleSaveEntry:any,
+    handleDeleteEntry:any
 }
   
 const SoloEntryModal = (props:SoloEntryModalProps)=>{
@@ -117,6 +119,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     }
   }
 
+
   const saveEntry = () =>{
     clearDetectedChanges()
 
@@ -130,6 +133,11 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     }
 
     props.handleSaveEntry(updatedEntry)
+    props.handleExit()
+  }
+
+  const deleteEntry= () =>{
+    props.handleDeleteEntry(props.entryObj._id)
     props.handleExit()
   }
 
@@ -191,6 +199,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
           <FooterArea 
             unsavedChangesDetected={changeDetected}
             handleSave={saveEntry}
+            handleDelete={deleteEntry}
           />
         </div>
       </div>
@@ -228,16 +237,22 @@ const HeaderArea = (props:headerProps)=> {
   
   interface footerProps{
     unsavedChangesDetected:boolean,
-    handleSave:any
+    handleSave:any,
+    handleDelete:any
   }
   const FooterArea = (props:footerProps)=> {
 
     return(
-      <div className={'flex items-center justify-end py-5 px-5 '}>
+      <div className={'flex items-center justify-between py-5 px-5 '}>
+        <button 
+            className={'rounded bg-amber-900 hover:bg-amber-950 px-2 '}
+            onClick={props.handleDelete}>
+            Delete
+        </button>
         <button 
             className={'rounded bg-blue-800 hover:bg-blue-950 px-2 '}
             onClick={props.handleSave}>
-            {props.unsavedChangesDetected ? "unsaved" : "Saved"}
+            {props.unsavedChangesDetected ? "Save" : "Saved"}
         </button>
       </div>
     )

@@ -33,7 +33,9 @@ function App() {
     axios.post(entriesAddress,entry)
   } 
 
-  
+  const removeEntryFromDb = (id:string) =>{
+    axios.delete(entriesAddress+ `/${id}`)
+  }
   
   const emptyEntry:Entry = {
     _id:'',
@@ -118,6 +120,15 @@ function App() {
     
   }
 
+  const deleteEntry = (id:string) => {
+    if (id.length > 0){
+      removeEntryFromDb(id)
+      const newTemporaryLocalCollection = entries.filter(item => item._id !== id)
+      setCollection(newTemporaryLocalCollection)
+      setTimeout(getCollectionFromDb,2000)
+    }
+  }
+
   const pointerEventsClass = ignoreClicks ? " pointer-events-none" : " pointer-events-auto"
 
 
@@ -134,6 +145,7 @@ function App() {
             handleEnterEdit={enterEditMode}
             handleExitEdit={exitEditMode}
             handleSaveEntry={saveEntryToApp}
+            handleDeleteEntry={deleteEntry}
             />
           <EntriesUi 
             collection={entries} 
@@ -154,6 +166,7 @@ function App() {
             handleEnterEdit={enterEditMode}
             handleExitEdit={exitEditMode}
             handleSaveEntry={saveEntryToApp}
+            handleDeleteEntry={deleteEntry}
             />
           <WelcomeUi 
             username="Centisully" 

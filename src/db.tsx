@@ -1,4 +1,4 @@
-import mongoose, { connection } from "mongoose"
+import mongoose from "mongoose"
 import express from "express"
 import cors from "cors"
 
@@ -114,6 +114,13 @@ async function saveEntry(entry:any){
     return newEntry
 }
 
+async function deleteEntry(id:string){
+    console.log("id to remove from db:",id)
+    const deletededEntry = await journalEntry.findByIdAndDelete(id)
+    console.log("deleted Entry:",deletededEntry)
+    return deletededEntry
+}
+
 app.put(`/${dbEntryCollectionName}/:entry`, (req,res)=>{
     const fullEntry = req.body
 
@@ -143,11 +150,29 @@ app.post(`/${dbEntryCollectionName}`,(req,res)=>{
     
 })
 
+app.delete(`/${dbEntryCollectionName}/:id`, (req,res)=>{
+    const id = req.params.id
+    try {
+        const deletedEntry = deleteEntry(id)
+        if (deletedEntry === null)
+        {
+            res.send(`couldn't find entry with id '${id}'`).status(404)
+        } 
+        else{
+            res.json(deletedEntry).status(200)
+        }
+    } catch (error) {
+        console.log("an error occured while attempting to delete an entry within the db:",error)
+        console.log("============== Server still running! ============")
+        res.send(`an error occured while communicating with the db: ${error}`).status(500)
+    }
+})
 
 
 
 
 
-const PORT = 3001
+
+const PORT = process.env.PORT || 3001
 app.listen(PORT)
 console.log(`server running on port ${PORT}`)
