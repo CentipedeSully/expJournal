@@ -1,15 +1,18 @@
+import * as dotenv from 'dotenv'
+dotenv.config()
+import {Secret} from "jsonwebtoken"
 import mongoose from "mongoose"
 import express from "express"
 import cors from "cors"
 
 
 
+
 const dbEntryCollectionName:string = 'journalEntries'
-const dbPassword:string=''
-const uri = `mongodb+srv://sullivansmith057:${dbPassword}@exp-journal-cluster.9fy8r.mongodb.net/?retryWrites=true&w=majority&appName=exp-journal-cluster`
+const uri = process.env.DATABASE_URI as Secret
 
 mongoose.set('strictQuery',false)
-mongoose.connect(uri,{dbName:"expJournalApp"})
+mongoose.connect(uri.toString(),{dbName:"expJournalApp"})
 
 const entrySchema = new mongoose.Schema({
     title: String,
