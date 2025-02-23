@@ -5,19 +5,20 @@ import EntryOverlay from "./EntryOverlay"
 import { Entry } from "./entry"
 import axios from "axios"
 
-const entriesAddress = `http://localhost:8080/journalEntries`
+//const entriesAddress = `http://localhost:${'10000'}/journalEntries`
+const backendUrl = await import.meta.env.VITE_BACKEND_URL + "/journalEntries"
 
 function App() { 
 
   const getCollectionFromDb = () =>{
-    axios.get(entriesAddress).then((response)=>{
+    axios.get(backendUrl).then((response)=>{
       setCollection(response.data)
     })
     
   }
 
   const getEntryFromDb = (id:string) =>{
-    axios.get(entriesAddress +`/${id}`).then((response)=>{
+    axios.get(backendUrl +`/${id}`).then((response)=>{
       console.log("found item:",response)
     })
     .catch((error)=>{
@@ -26,15 +27,15 @@ function App() {
   }
 
   const updateEntryInDb = (entry:Entry) =>{
-    axios.put(entriesAddress+`/${entry._id}`, entry)
+    axios.put(backendUrl+`/${entry._id}`, entry)
   }
   
   const addEntryToDb = (entry:any)=>{
-    axios.post(entriesAddress,entry)
+    axios.post(backendUrl,entry)
   } 
 
   const removeEntryFromDb = (id:string) =>{
-    axios.delete(entriesAddress+ `/${id}`)
+    axios.delete(backendUrl+ `/${id}`)
   }
   
   const emptyEntry:Entry = {
