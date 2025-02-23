@@ -24,7 +24,7 @@ const entrySchema = new mongoose.Schema({
 
 const journalEntry = mongoose.model('journalEntry',entrySchema)
 const corsOptions = {
-    origin:`http://localhost:${process.env.FRONT_PORT}`,
+    origin:`https://expjournal-frontend.onrender.com`,
     optionsSuccessStatus: 200
 }
 
