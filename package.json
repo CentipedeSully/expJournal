@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx vite",
+    "build": "vite build",
     "db": "tsx src/db.tsx",
     "dev": "nodemon npx vite"
   },
