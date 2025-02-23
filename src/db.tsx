@@ -24,7 +24,7 @@ const entrySchema = new mongoose.Schema({
 
 const journalEntry = mongoose.model('journalEntry',entrySchema)
 const corsOptions = {
-    origin:`http://localhost:5173`,
+    origin:`http://localhost:${process.env.FRONT_PORT}`,
     optionsSuccessStatus: 200
 }
 
@@ -176,6 +176,6 @@ app.delete(`/${dbEntryCollectionName}/:id`, (req,res)=>{
 
 
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 8080
 app.listen(PORT)
 console.log(`server running on port ${PORT}`)

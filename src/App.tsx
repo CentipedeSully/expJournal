@@ -5,7 +5,7 @@ import EntryOverlay from "./EntryOverlay"
 import { Entry } from "./entry"
 import axios from "axios"
 
-const entriesAddress = `${process.env.PORT || 'http://localhost:3001'}/journalEntries`
+const entriesAddress = `http://localhost:8080/journalEntries`
 
 function App() { 
 
