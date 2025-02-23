@@ -5,10 +5,12 @@ import EntryOverlay from "./EntryOverlay"
 import { Entry } from "./entry"
 import axios from "axios"
 
-//const entriesAddress = `http://localhost:${'10000'}/journalEntries`
-const backendUrl = await import.meta.env.VITE_BACKEND_URL + "/journalEntries"
+
 
 function App() { 
+  
+  const backendUrl = import.meta.env.VITE_BACKEND_URL + "/journalEntries"
+
 
   const getCollectionFromDb = () =>{
     axios.get(backendUrl).then((response)=>{
