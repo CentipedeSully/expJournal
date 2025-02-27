@@ -6,38 +6,83 @@ import { Entry } from "./entry"
 import axios from "axios"
 
 
+console.log("App mode:", import.meta.env.MODE)
+const appMode = import.meta.env.MODE
+const devBackendUrl = import.meta.env.VITE_DEV_BACKEND + '/journalEntries'
+const prodBackendUrl = import.meta.env.VITE_PROD_BACKEND + '/journalEntries'
+
+
 
 function App() { 
-  
-  const backendUrl = import.meta.env.VITE_BACKEND_URL + "/journalEntries"
-
 
   const getCollectionFromDb = () =>{
-    axios.get(backendUrl).then((response)=>{
-      setCollection(response.data)
-    })
+    if (appMode === 'development'){
+      axios.get(devBackendUrl)
+      .then((response)=>{
+        setCollection(response.data)
+      })
+      .catch(error =>{
+        console.log('error fetching data from db:',error)
+      })
+    }
+    else {
+      axios.get(prodBackendUrl)
+      .then((response)=>{
+        setCollection(response.data)
+      })
+      .catch(error =>{
+        console.log('error fetching data from db:',error)
+      })
+    }
+    
     
   }
 
   const getEntryFromDb = (id:string) =>{
-    axios.get(backendUrl +`/${id}`).then((response)=>{
-      console.log("found item:",response)
-    })
-    .catch((error)=>{
-      console.log("something unexpected happened:",error)
-    })
+    if (appMode === 'development'){
+      axios.get(devBackendUrl +`/${id}`).then((response)=>{
+        console.log("found item:",response)
+      })
+      .catch((error)=>{
+        console.log("something unexpected happened:",error)
+      })
+    }
+    else {
+      axios.get(prodBackendUrl +`/${id}`).then((response)=>{
+        console.log("found item:",response)
+      })
+      .catch((error)=>{
+        console.log("something unexpected happened:",error)
+      })
+    }
   }
 
   const updateEntryInDb = (entry:Entry) =>{
-    axios.put(backendUrl+`/${entry._id}`, entry)
+    if (appMode === 'development'){
+      axios.put(devBackendUrl+`/${entry._id}`, entry)
+    }
+    else{
+      axios.put(prodBackendUrl+`/${entry._id}`, entry)
+    }
+    
   }
   
   const addEntryToDb = (entry:any)=>{
-    axios.post(backendUrl,entry)
+    if (appMode === "development"){
+      axios.post(devBackendUrl,entry)
+    }
+    else{
+      axios.post(prodBackendUrl,entry)
+    }
   } 
 
   const removeEntryFromDb = (id:string) =>{
-    axios.delete(backendUrl+ `/${id}`)
+    if (appMode === 'development'){
+      axios.delete(devBackendUrl+ `/${id}`)
+    }
+    else{
+      axios.delete(prodBackendUrl+ `/${id}`)
+    }
   }
   
   const emptyEntry:Entry = {
@@ -51,7 +96,7 @@ function App() {
   }
 
   const [currentUi, setUi] = useState("welcome")
-  const [entries,setCollection] = useState([])
+  const [entries,setCollection] = useState([emptyEntry])
   const [viewedEntry, setViewedEntry] = useState(emptyEntry)
   const [showEntryWindow,setShowEntryWindow] = useState(false)
   const [editMode,setMode] = useState(false)

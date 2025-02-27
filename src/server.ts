@@ -6,6 +6,30 @@ import express from "express"
 import cors from "cors"
 
 
+//use express
+const app = express()
+app.use(express.json())
+
+
+//determine the cors origin via build mode (either dev or production)
+let corsOriginOption = ''
+
+if (process.argv.includes("--dev")){
+    console.log("dev mode detected.\nUpdating cors origin")
+    corsOriginOption = process.env.CORS_ORIGIN_DEVELOPMENT
+}
+else{
+    console.log("starting server in production mode")
+    corsOriginOption = process.env.CORS_ORIGIN_PRODUCTION
+}
+
+const corsOrigin = corsOriginOption
+const corsOptions = {
+    origin: corsOrigin,
+    optionsSuccessStatus: 200
+}
+
+app.use(cors(corsOptions))
 
 
 const dbEntryCollectionName:string = 'journalEntries'
@@ -13,7 +37,6 @@ const uri = process.env.DATABASE_URI as Secret
 
 mongoose.set('strictQuery',false)
 mongoose.connect(uri.toString(),{dbName:"expJournalApp"})
-
 const entrySchema = new mongoose.Schema({
     title: String,
     content: String,
@@ -21,17 +44,9 @@ const entrySchema = new mongoose.Schema({
     keywords: [String],
     dateMMDDYYYY: String
 }, {collection: `${dbEntryCollectionName}`})
-
 const journalEntry = mongoose.model('journalEntry',entrySchema)
-const corsOptions = {
-    origin:`https://expjournal-frontend.onrender.com`,
-    optionsSuccessStatus: 200
-}
 
 
-const app = express()
-app.use(express.json())
-app.use(cors(corsOptions))
 
 //visit server
 app.get('/' ,(request,response)=>{
@@ -46,6 +61,9 @@ app.get(`/${dbEntryCollectionName}`, (request, response)=>{
 
         response.json(entryCollection)
         response.status(200)
+    })
+    .catch((error) =>{
+        response.send(`error processing request: ${error}`).status(500)
     })
 })
 
