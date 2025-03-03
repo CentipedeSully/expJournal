@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 
 interface EntryUiProps{
     collection:entryDefs.Entry[],
+    dbOperationCode:number
     handleWriteNewEntry:any,
     handleClickEntry:any,
     handleRefreshClick:any
@@ -107,6 +108,7 @@ const EntriesUi = (props:EntryUiProps)=> {
             appliedKeywords={keywordCollection}/>
         <CollectionDisplay 
             collection={viewableEntries} 
+            messageCode={props.dbOperationCode}
             handleNewEntryClick={props.handleWriteNewEntry}
             handleEntryClick={props.handleClickEntry}
             handleRefreshClick={props.handleRefreshClick}
@@ -327,6 +329,7 @@ const FilterArea = (props:filterProps) =>{
 
 interface CollectionDisplayProps{
     collection:entryDefs.Entry[],
+    messageCode:number,
     handleNewEntryClick:any,
     handleEntryClick:any,
     handleRefreshClick:any
@@ -334,12 +337,123 @@ interface CollectionDisplayProps{
 const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
 
+
+    /*Message Codes:
+        0: no Message
+        1: Fetching Data
+        2: Fetch Success
+        3: Fetch Failure
+        4: Updating Db
+        5: Db Update Success
+        6: Db Update Failure
+    */
+
+    const emptyMessage = ""
+    const emptyDate = "---"
+    const [message,setMessage] = useState(emptyMessage)
+    const [timeout,trackNewTimeout] = useState(null)
+    const [lastUpdated,setUpdateTime] = useState(emptyDate)
+    const fetchInProgress = "fetching data . . ."
+    const fetchSuccess = "data RETRIEVED"
+    const fetchFailure = "FAILED to retrieve data"
+    const dbUpdateInProgress = "sending data . . ."
+    const dbUpdateSuccess = "database UPDATED"
+    const dbUpdateFailure = "FAILED to update database"
+
+
+
+
+    //clear the fetch message once it completes
+    useEffect(()=>{
+        ManageMessageVisual()
+    },[props.messageCode])
+
+    //Function below taken from google, then tweaked.
+    //Didn't feel like writing Military-> nonMilitarty from scratch XD
+    function getCurrentTime() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+      
+        const boundHours = hours % 12;
+        const nonMilitaryHours = boundHours ? boundHours : 12; // the hour '0' should be '12'
+      
+        const currentTime = `${nonMilitaryHours}:${minutes} ${ampm}`;
+        return currentTime;
+    }
+
+
+    const updateTime = () =>{
+        setUpdateTime(`${getCurrentTime()}`)
+    }
+
+    const ManageMessageVisual = ()=>{
+
+        //interrupt the timeout function, if one exists
+        if (timeout !== null)
+        {
+            //clear the timeout
+            clearTimeout(timeout)
+
+            //reset the tracked id
+            trackNewTimeout(null)
+        }
+
+
+        switch (props.messageCode){
+            case 1:
+                setMessage(fetchInProgress)
+                break;
+
+            case 2:
+                setMessage(fetchSuccess)
+                updateTime()
+                trackNewTimeout(setTimeout(timeOutmessage,5000))
+                break;
+
+            case 3:
+                setMessage(fetchFailure)
+                break;
+
+            case 4:
+                setMessage(dbUpdateInProgress)
+                break;
+
+            case 5:
+                setMessage(dbUpdateSuccess)
+                trackNewTimeout(setTimeout(timeOutmessage,5000))
+                break;
+
+            case 6:
+                setMessage(dbUpdateFailure)
+                break;
+
+            default:
+                setMessage(emptyMessage)
+                break;
+                
+        }
+    }
+
+    const timeOutmessage = ()=>{
+        setMessage(emptyMessage)
+    }
+
     return (
         <div>
             <div className="flex flex-row justify-between px-10 pb-1">
-                <h2 className="">Entries</h2>
+                <h2>Entries</h2>
+
                 
-                <div className="flex flex-row space-x-2">
+                <div className="flex flex-row space-x-2 ">
+
+                    <div className="hover:bg-blue-950 rounded">
+                        <p className={message === emptyMessage ? "" : 'px-2'}>{message}</p>
+                    </div>
+
+                    <p className="text-sm mt-1">-last updated: {lastUpdated}-</p>
+
                     <SmallButton 
                         label={"Refresh"}
                         onClick={props.handleRefreshClick}

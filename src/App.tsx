@@ -3,34 +3,99 @@ import WelcomeUi from "./WelcomeUi"
 import EntriesUi from "./EntriesUi"
 import EntryOverlay from "./EntryOverlay"
 import { Entry } from "./entry"
-import axios from "axios"
+import axios, { AxiosResponse } from "axios"
 
 
 console.log("App mode:", import.meta.env.MODE)
 const appMode = import.meta.env.MODE
 const devBackendUrl = import.meta.env.VITE_DEV_BACKEND + '/journalEntries'
 const prodBackendUrl = import.meta.env.VITE_PROD_BACKEND + '/journalEntries'
+const debugUrl = import.meta.env.VITE_DEV_BACKEND + '/debug_status_codes'
+
+const ResponseResults = Object.freeze({
+  success:'success',
+  error:'error',
+  pending:'pending',
+  undefined:'UNDEFINED_RESPONSE_CASE'
+})
 
 
 
 function App() { 
 
+
+  const handleResponse = (response:AxiosResponse) =>{
+    const status = response.status
+    switch(true){
+      case (status >= 100 && status < 200):
+        console.log(`Response Status '${status}' detected as 'INFORMATIONAL'`)
+        return ResponseResults.pending
+      case (status >= 200 && status < 300):
+        console.log(`Response Status '${status}' detected as 'SUCCESSFUL'`)
+        return ResponseResults.success
+      case (status >= 300 && status < 400):
+        console.log(`Response Status '${status}' detected as 'REDIRECTION'`)
+        return ResponseResults.pending
+      case (status >= 400 && status < 500):
+        console.log(`Response Status '${status}' detected as 'CLIENT ERROR'`)
+        return ResponseResults.error
+      case (status >= 500 && status < 600):
+        console.log(`Response Status '${status}' detected as 'SERVER ERROR'`)
+        return ResponseResults.error
+      default:
+        console.log(`failed to resolve response of status '${status}'`)
+        return ResponseResults.undefined
+    }
+  }
+
+  /*
+  const testResponseReading = (desiredStatusCode:number)=>{
+    console.log(`testing response handling for code '${desiredStatusCode}'...`)
+    axios.get(debugUrl + `/${desiredStatusCode.toString()}`).then((response)=>{
+      handleResponse(response)
+    }).catch((err)=>{
+      console.log(`Couldn't reach debug server for some reason. Aborted testing for expected code '${desiredStatusCode}'\n Error:${err}`)
+    })
+  }
+*/
+
   const getCollectionFromDb = () =>{
     if (appMode === 'development'){
-      axios.get(devBackendUrl)
+
+      setDbCode(1)
+
+      axios.get(devBackendUrl , {timeout : 5000})
       .then((response)=>{
-        setCollection(response.data)
+        if (response.status == 200){
+          setDbCode(2)
+          setCollection(response.data)
+        }
+        else{
+          setDbCode(3)
+        }
       })
       .catch(error =>{
+        
+        setDbCode(3)
         console.log('error fetching data from db:',error)
       })
     }
     else {
-      axios.get(prodBackendUrl)
+
+      setDbCode(1)
+
+      axios.get(prodBackendUrl , {timeout : 5000})
       .then((response)=>{
-        setCollection(response.data)
+        if (response.status == 200){
+          setDbCode(2)
+          setCollection(response.data)
+        }
+        else{
+          setDbCode(3)
+        }
       })
       .catch(error =>{
+        setDbCode(3)
         console.log('error fetching data from db:',error)
       })
     }
@@ -38,6 +103,7 @@ function App() {
     
   }
 
+  /*
   const getEntryFromDb = (id:string) =>{
     if (appMode === 'development'){
       axios.get(devBackendUrl +`/${id}`).then((response)=>{
@@ -56,32 +122,123 @@ function App() {
       })
     }
   }
+    */
 
   const updateEntryInDb = (entry:Entry) =>{
     if (appMode === 'development'){
+
+      //show the attempt to user
+      setDbCode(4)
+
       axios.put(devBackendUrl+`/${entry._id}`, entry)
+      .then((response)=>{
+        if (response.status == 200){
+          setDbCode(5)
+        }
+        else{
+          setDbCode(6)
+        }
+      })
+      .catch((err)=>{
+        setDbCode(6)
+      })
     }
     else{
+
+      //show the attempt to user
+      setDbCode(4)
+
       axios.put(prodBackendUrl+`/${entry._id}`, entry)
+      .then((response)=>{
+        if (response.status == 200){
+          setDbCode(5)
+        }
+        else{
+          setDbCode(6)
+        }
+      })
+      .catch((err)=>{
+        setDbCode(6)
+      })
     }
     
   }
   
   const addEntryToDb = (entry:any)=>{
     if (appMode === "development"){
+
+      //show the attempt to user
+      setDbCode(4)
+
       axios.post(devBackendUrl,entry)
+      .then((response)=>{
+        if (response.status == 200){
+          setDbCode(5)
+        }
+        else{
+          setDbCode(6)
+        }
+      })
+      .catch((err)=>{
+        setDbCode(6)
+      })
     }
     else{
+
+      //show the attempt to user
+      setDbCode(4)
+
       axios.post(prodBackendUrl,entry)
+      .then((response)=>{
+        if (response.status == 200){
+          setDbCode(5)
+        }
+        else{
+          setDbCode(6)
+        }
+      })
+      .catch((err)=>{
+        setDbCode(6)
+      })
     }
   } 
 
   const removeEntryFromDb = (id:string) =>{
     if (appMode === 'development'){
+
+      //show the attempt to user
+      setDbCode(4)
+
       axios.delete(devBackendUrl+ `/${id}`)
+      .then((response)=>{
+        if (response.status == 200){
+          setDbCode(5)
+        }
+        else{
+          setDbCode(6)
+        }
+      })
+      .catch((err)=>{
+        setDbCode(6)
+      })
     }
     else{
+
+      //show the attempt to user
+      setDbCode(4)
+
       axios.delete(prodBackendUrl+ `/${id}`)
+      .then((response)=>{
+        if (response.status == 200){
+          setDbCode(5)
+        }
+        else{
+          setDbCode(6)
+        }
+      })
+      .catch((err)=>{
+        setDbCode(6)
+      })
     }
   }
   
@@ -101,7 +258,20 @@ function App() {
   const [showEntryWindow,setShowEntryWindow] = useState(false)
   const [editMode,setMode] = useState(false)
   const [ignoreClicks, setIgnoreClicks] = useState(false)
+  const [dbOperationCode, setDbCode] = useState(0)
 
+      /*Db operation Codes:
+        0: nothing/idle
+        1: Fetching Data
+        2: Fetch Success
+        3: Fetch Failure
+        4: Updating Db
+        5: Db Update Success
+        6: Db Update Failure
+    */
+
+
+  //fetch data from the db on app start
   useEffect(()=>{
     getCollectionFromDb()
   },[])
@@ -140,7 +310,7 @@ function App() {
       updateEntryInDb(entry)
       const newTemporaryLocalCollection = entries.filter(item => item._id !== entry._id)
       setCollection(newTemporaryLocalCollection)
-      setTimeout(getCollectionFromDb,2000)
+      //setTimeout(getCollectionFromDb,2000)
     }
       
     
@@ -155,7 +325,7 @@ function App() {
       }
 
       addEntryToDb(newEntry)
-      setTimeout(getCollectionFromDb,2000)
+      //setTimeout(getCollectionFromDb,2000)
     }
     
 
@@ -173,7 +343,7 @@ function App() {
       removeEntryFromDb(id)
       const newTemporaryLocalCollection = entries.filter(item => item._id !== id)
       setCollection(newTemporaryLocalCollection)
-      setTimeout(getCollectionFromDb,2000)
+      //setTimeout(getCollectionFromDb,2000)
     }
   }
 
@@ -197,6 +367,7 @@ function App() {
             />
           <EntriesUi 
             collection={entries} 
+            dbOperationCode={dbOperationCode}
             handleWriteNewEntry={showEmptyModal}
             handleClickEntry={viewEntryInModal}
             handleRefreshClick={getCollectionFromDb}/>

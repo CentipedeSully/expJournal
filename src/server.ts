@@ -189,7 +189,45 @@ app.delete(`/${dbEntryCollectionName}/:id`, (req,res)=>{
     }
 })
 
+app.get(`/debug_status_codes/:desiredCode`,(req,res)=>{
+    console.log(`DEBUG ADDRESS VISITED. REQUESTED CODE: '${req.params.desiredCode}'`)
 
+    let status = Number.NaN
+    try{
+        status = Number(req.params.desiredCode)
+    }
+    catch(error){
+        console.log(`error while converting '${req.params.desiredCode}' to a number. statusCode defaulted to 'NaN'`)
+    }
+     
+    
+    switch(true){
+        case (status >= 100 && status < 200):
+            console.log(`Sending requested Status 'INFORMATIONAL'`)
+            res.status(100).send("DEBUG STATUS: 'INFORMATIONAL'").end()
+            return
+        case (status >= 200 && status < 300):
+            console.log(`Sending requested Status 'SUCCESSFUL'`)
+            res.status(200).send("DEBUG STATUS: 'SUCCESS'")
+            return
+        case (status >= 300 && status < 400):
+            console.log(`Sending requested Status 'REDIRECTION'`)
+            res.status(300).send("DEBUG STATUS: 'REDIRECTION'").end()
+            return
+        case (status >= 400 && status < 500):
+            console.log(`Sending requested Status 'CLIENT ERROR'`)
+            res.status(400).send("DEBUG STATUS: 'CLIENT ERROR'")
+            return
+        case (status >= 500 && status < 600):
+            console.log(`Sending requested Status 'SERVER ERROR'`)
+            res.status(500).send("DEBUG STATUS: 'SERVER ERROR'")
+            return
+        default:
+            console.log(`Case undefined for status code '${status}'. sending -1 as the status`)
+            res.status(400).send("DEBUG STATUS: 'CLIENT ERROR DUE TO UNDEFINED CASE'")
+            return
+    }
+})
 
 
 
