@@ -19,6 +19,10 @@ const ResponseResults = Object.freeze({
   undefined:'UNDEFINED_RESPONSE_CASE'
 })
 
+const timeOut = {
+  timeout: 6000
+}
+
 
 
 function App() { 
@@ -64,9 +68,9 @@ function App() {
 
       setDbCode(1)
 
-      axios.get(devBackendUrl , {timeout : 5000})
+      axios.get(devBackendUrl)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(2)
           setCollection(response.data)
         }
@@ -84,9 +88,9 @@ function App() {
 
       setDbCode(1)
 
-      axios.get(prodBackendUrl , {timeout : 5000})
+      axios.get(prodBackendUrl)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(2)
           setCollection(response.data)
         }
@@ -132,8 +136,9 @@ function App() {
 
       axios.put(devBackendUrl+`/${entry._id}`, entry)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(5)
+          setTimeout(getCollectionFromDb,3000)
         }
         else{
           setDbCode(6)
@@ -150,8 +155,9 @@ function App() {
 
       axios.put(prodBackendUrl+`/${entry._id}`, entry)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(5)
+          setTimeout(getCollectionFromDb,3000)
         }
         else{
           setDbCode(6)
@@ -172,8 +178,9 @@ function App() {
 
       axios.post(devBackendUrl,entry)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(5)
+          setTimeout(getCollectionFromDb,3000)
         }
         else{
           setDbCode(6)
@@ -190,8 +197,9 @@ function App() {
 
       axios.post(prodBackendUrl,entry)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(5)
+          setTimeout(getCollectionFromDb,3000)
         }
         else{
           setDbCode(6)
@@ -211,8 +219,9 @@ function App() {
 
       axios.delete(devBackendUrl+ `/${id}`)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(5)
+          setTimeout(getCollectionFromDb,3000)
         }
         else{
           setDbCode(6)
@@ -227,10 +236,11 @@ function App() {
       //show the attempt to user
       setDbCode(4)
 
-      axios.delete(prodBackendUrl+ `/${id}`)
+      axios.delete(prodBackendUrl+ `/${id}`,)
       .then((response)=>{
-        if (response.status == 200){
+        if (handleResponse(response) === ResponseResults.success){
           setDbCode(5)
+          setTimeout(getCollectionFromDb,3000)
         }
         else{
           setDbCode(6)
