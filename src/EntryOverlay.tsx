@@ -1,6 +1,8 @@
 import { createPortal } from "react-dom"
 import { Entry } from "./entry"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import Editor from "./Editor"
+import Quill from "quill"
 
 
 const entryModalParent = document.getElementById('overlay-container')
@@ -497,17 +499,36 @@ const HeaderArea = (props:headerProps)=> {
     editMode:boolean,
     handleUpdateContent:any
   }
+  const Delta = Quill.import('delta')
   const ContentArea = (props:stringProps) => {
-    const showOnReadClass = props.editMode ? " hidden" : " visible"
-    const showOnEditClass = props.editMode ? " visible" : " hidden"
+
+    const [readOnly, setReadOnly] = useState(!props.editMode);
+
+    const quillRef = useRef()
+
     return (
-      <div className='h-83  overflow-auto py-2 px-2 '>
+      <div className='h-83  overflow-auto py-2 px-2'>
+        <Editor
+            ref={quillRef}
+            //@ts-ignore
+            readOnly={readOnly}
+            defaultValue={new Delta()
+              .insert(props.content)
+              .insert('\n')}
+            onSelectionChange={null}
+            onTextChange={null}
+          />
+      </div>
+
+
+      /*
+      <div id="editor" className='h-83  overflow-auto py-2 px-2 '>
         <p className={showOnReadClass}>{props.content}</p>
         <textarea 
             className={"block w-full h-full rounded border px-2" + showOnEditClass} 
             value={props.editedContent} 
             onChange={props.handleUpdateContent}/>
-      </div>
+      </div>*/
     )
   }
 
