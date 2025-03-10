@@ -11,6 +11,9 @@ interface EntryUiProps{
     handleClickEntry:any,
     handleRefreshClick:any
 }
+
+
+
 const EntriesUi = (props:EntryUiProps)=> {
 
     const [viewableEntries,setView] = useState(props.collection)
@@ -169,9 +172,32 @@ const FilterArea = (props:filterProps) =>{
     const showOnNone = catVisibility||keyVisibility ? " hidden" : " visible"
     const showOnAny = catVisibility||keyVisibility ? " visible" : " hidden"
     const categoryVisibility = catVisibility ? " visible" : " hidden"
-    const showOnNoCat = catVisibility ? "  hidden" : " visible"
     const keywordsVisibility = keyVisibility ? " visible" : " hidden"
-    const showOnNoKey = keyVisibility ? " hidden" : " visible"
+    const lgCatColumns = props.appliedCategories.length === 1 ? "columns-1" : "columns-2"
+    const lgKeyColumns = props.appliedKeywords.length === 1 ? "columns-1" : "columns-2"
+
+    
+
+    const calcLxCatColumns = ():string=>{
+
+        const categories = props.appliedCategories.length
+        if (categories === 0)
+            return "columns-1"
+        else if (categories<3)
+            return `columns-${categories}`
+        else return 'columns-3'
+    }
+
+    const calcLxKeyColumns = ():string=>{
+
+        const keywords = props.appliedKeywords.length
+        if (keywords === 0)
+            return "columns-1"
+        else if (keywords<3)
+            return `columns-${keywords}`
+        else return 'columns-3'
+    }
+
 
     const throwNewTitle = (event:any) =>{
         const newTitle = event.target.value
@@ -199,11 +225,12 @@ const FilterArea = (props:filterProps) =>{
 
     return (
         <div className="py-4">
+
+            <p className="text-center pb-1">-- Filter Settings --</p>
             <div className="flex sm:flex-col md:flex-row-reverse lg:flex-row-reverse border rounded">
 
-                <div className="hover:bg-gray-900 px-6">
-                    <p className="text-center pt-1">-- Filters --</p>
-                    <form action="" className="flex flex-col py-3 gap-3">
+                <div className="hover:bg-gray-900 px-6 pt-5 pb-3">
+                    <form action="" className="flex flex-col gap-3">
 
                         <div>
                             <div className="flex flex-col sm:items-center">
@@ -263,35 +290,32 @@ const FilterArea = (props:filterProps) =>{
                 
                 <hr className="sm:visible md:hidden lg:hidden"/>
 
+
                 <div className=" pb-3 hover:bg-gray-900 w-full ">
-                    <div className="sm:pt-2 md:pt-1 lg:pt-3">
-                        <p className="text-center pb-3">-- Applied Effects --</p>
-                    </div>
-                    
-                    <div className={"flex flex-col h-3/4"}>
+                    <div className={"flex flex-col h-full "}>
 
                         <p className={"pb-5 text-center my-auto" + showOnNone}>( No category/keyword applied )</p>
 
                         <div className={"flex flex-row justify-evenly py-3 text-center" + showOnAny}>
-                            <div className={categoryVisibility}>
+                            <div className={categoryVisibility + ""}>
                                 <p>Categories</p>
-                                <ul className="lg:columns-2 lx:columns-2 h-25 border border-gray-800 rounded overflow-y-auto whitespace-nowrap">
+                                <ul className={"h-30 rounded overflow-auto whitespace-nowrap space-y-1.5 pt-0.5 " + `lg:${lgCatColumns} lx:${calcLxCatColumns()}`}>
                                 { props.appliedCategories.map((word)=>{ 
 
                                     const elementId = 'category-filter-item-' + word
                                     return(
 
                                         <li 
-                                            className='rounded text-sm hover:bg-amber-950 w-30 overflow-x-auto'
+                                            className='rounded text-sm hover:bg-amber-950 w-30  overflow-x-auto bg-gray-800 px-2'
                                             key={word}
                                             id={elementId}>
                                             <div className="flex flex-row justify-end gap-1">
-                                                <span className="w-full text-start pl-2 overflow-x-auto">
+                                                <span className="w-full text-start overflow-x-auto">
                                                     {word}
                                                 </span>
-                                                <span className="items">
+                                                <span>
                                                     <button 
-                                                        className="rounded px-0.5  hover:bg-red-900  whitespace-nowrap"
+                                                        className="rounded  hover:bg-red-900  whitespace-nowrap"
                                                         onClick={removeCategoryLabel}
                                                         type="button"
                                                     >( - )</button>
@@ -305,23 +329,23 @@ const FilterArea = (props:filterProps) =>{
 
                             <div className={ keywordsVisibility}>
                                 <p>Keywords</p>
-                                <ul className="lg:columns-2  lx:columns-2  h-25 border border-gray-800 rounded border overflow-y-auto whitespace-nowrap">
+                                <ul className={"h-30 rounded overflow-y-auto whitespace-nowrap space-y-1.5 pt-0.5 " + `lg:${lgKeyColumns} lx:${calcLxKeyColumns()}`}>
                                     { props.appliedKeywords.map((word)=>{ 
 
                                         const elementId = 'keyword-filter-item-' + word
                                         return(
 
                                             <li 
-                                                className='rounded text-sm hover:bg-amber-950 w-30 '
+                                                className='rounded text-sm hover:bg-amber-950 w-30 overflow-x-auto bg-gray-800 px-2 '
                                                 key={word}
                                                 id={elementId}>
                                                 <div className="flex flex-row justify-end gap-1">
-                                                    <span className="w-full text-start pl-2 overflow-x-auto">
+                                                    <span className="w-full text-start overflow-x-auto">
                                                         {word}
                                                     </span>
                                                     <span>
                                                         <button 
-                                                            className="rounded px-0.5 hover:bg-red-900 whitespace-nowrap"
+                                                            className="rounded hover:bg-red-900 whitespace-nowrap"
                                                             onClick={removeKeywordLabel}
                                                             type="button"
                                                         >( - )</button>
@@ -377,6 +401,98 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
     const dbUpdateSuccess = "database UPDATED"
     const dbUpdateFailure = "FAILED to update database"
 
+
+    const gettingStartedTitle = "Getting Started"
+    const gettingStartedTip = "( ^ Select a topic for specific advice ^ )"
+    const gettingStartedBodyContent = [
+        {
+            key:'0',
+            header:"Purpose",
+            paragraphs:[{
+                key:'0',
+                value:'This app serves as an online repository of notes that\'re categorized, dated, and organized for convenient access-- or an online journal, stated simply.'
+            }]
+        },
+        {
+            key:'1',
+            header:"Quick Start",
+            paragraphs:[{
+                key:'0',
+                value:'Click on any Entry within the list to read it\'s contents. To find a specific entry, use the filter area to narrow down the displayed results.'
+            }]
+        }
+    ]
+
+    const usingFiltersTitle = "Using Filters"
+    const usingFiltersTip=""
+    const usingFiltersContent = [
+        {
+            key:'0',
+            header:"Simple Search",
+            paragraphs:[{
+                key:'0',
+                value:'Type in a title to narrow down the entries by title. ' + 
+                    'Entry titles are not unique, meaning many different entries with similar title may exist. ' + 
+                    'Add greater specificity by adding more keywords and a category to the query.'
+            },
+            {
+                key:'1',
+                value:'When adding a title, the collection will update itself immediately. No added validation is necessary. '+
+                    'When adding a keyword or category to the query however, confirm the addition using the [+] button. '+ 
+                    'A visual representation of the new query element will appear in the "Filter Settings" area, and then the collection will apply the query and update itself. '+
+                    'To remove a query word, hover over the word and click the [-] button. The collection will then apply the edtied query and update itself'
+            }]
+        },
+        {
+            key:'1',
+            header:"No Entries Displayed?",
+            paragraphs:[{
+                key:'0',
+                value:'Entries will not be displayed for two reasons:'
+            },
+            {
+                key:'1',
+                value:'1) There aren\'t any entries matching the query defined by the filters. ' + 
+                    'Remove categories, keywords, and/or the current specified title to revisit the available collection.'
+            },
+            {
+                key:'2',
+                value:'2) Either the app is still communicating with the database, or the database couldn\'t be reached for some reason. '+ 
+                    'Check if a communication status message has appeared under the entries collection display, to the left of the "last updated" time. ' +
+                    'Its context will provide a clue to the problem. Otherwise, if no message has presented itself, simply refresh the collection and '+
+                    'watch for the communication status message. If it states the data has been received, then no database errors were detected, and ' +
+                    'the query should be tailored for a more general case. If no entries aren\'t yet present with no category, keyword, nor title applied, '+
+                    'then the database is simply empty, and I apologise for wasting your time ^_^\'' 
+            }]
+        }
+    ]
+
+    const contactTitle = "Contact Info"
+    const contactTip = "Reach out if you need help with a project!"
+    const contactContent=[
+        {
+            key:'0',
+            header:"LinkedIn",
+            paragraphs:[{
+                key:'0',
+                value:'https://www.linkedin.com/in/william-smith-154a5120a/'
+            }]
+        },
+        {
+            key:'1',
+            header:"Github",
+            paragraphs:[{
+                key:'0',
+                value:'https://github.com/CentipedeSully'
+            }]
+        }
+        
+    ]
+
+
+    const [guideTitle,setTitle] = useState(gettingStartedTitle)
+    const [guideTip,setTip] = useState(gettingStartedTip)
+    const [guideBody,setBody] = useState(gettingStartedBodyContent)
 
 
 
@@ -457,47 +573,163 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
         setMessage(emptyMessage)
     }
 
-    return (
-        <div>
-            <div className="flex flex-row justify-between px-10 pb-1">
-                <h2>Entries</h2>
+    interface guideHeaderProps{
+        title:string,
+        titleTip:string
+    }
 
-                
-                <div className="flex flex-row space-x-2 ">
+    const GuideHeader = (props:guideHeaderProps) =>{
 
-                    <div className="hover:bg-blue-950 rounded">
-                        <p className={message === emptyMessage ? "" : 'px-2'}>{message}</p>
-                    </div>
-
-                    <p className="text-sm mt-1">-last updated: {lastUpdated}-</p>
-
-                    <SmallButton 
-                        label={"Refresh"}
-                        onClick={props.handleRefreshClick}
-                    />
-                    <SmallButton 
-                        label={"Create New"}
-                        onClick={props.handleNewEntryClick}
-                    />
-                </div>
-                
+        return(
+            <div className="flex justify-between pb-1.5">
+                <p className="font-bold text-2xl">{props.title}</p>
+                <p className="italic">{props.titleTip}</p>
             </div>
-            
-            <ul className="border rounded">
-                {props.collection.map((entry)=>{
-                    return (
-                        <li  key={entry._id}>
-                            <EntryElement 
-                                entry={entry}
-                                onClick={props.handleEntryClick}
-                                />
-                        </li>
-                        
+        )
+    }
+
+    interface paragraph{
+        key:string,
+        value:string
+    }
+
+    interface bodyContent{
+        key:string,
+        header:string,
+        paragraphs:paragraph[]
+    }
+
+    interface guideBodyProps{
+        bodyContentList:bodyContent[]
+    }
+
+    const GuideBody = (props:guideBodyProps) => {
+
+
+        return(
+            <div className="overflow-y-auto h-38">
+                {props.bodyContentList.map((contentItem)=>{
+                    return(
+                        <div key={contentItem.key}>
+                            <p className="font-bold">{contentItem.header}</p>
+                            <div className="pl-5">
+                                {contentItem.paragraphs.map((paragraph)=>{
+                                    return(
+                                        <div key={paragraph.key}>
+                                            <p>{paragraph.value}</p>
+                                            <br />
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
                     )
                 })}
-            </ul>
+            </div>
+        )
+    }
+
+    const showGetStarted = ()=>{
+        setTitle(gettingStartedTitle)
+        setTip(gettingStartedTip)
+        setBody(gettingStartedBodyContent)
+    }
+
+    const showUseFilters = ()=>{
+        setTitle(usingFiltersTitle)
+        setTip(usingFiltersTip)
+        setBody(usingFiltersContent)
+    }
+    const showContact = ()=>{
+        setTitle(contactTitle)
+        setTip(contactTip)
+        setBody(contactContent)
+    }
+
+
+    return (
+        <div>
+            <div id="content-area" className="flex justify-end gap-2 sm:flex-col-reverse md:flex-col-reverse lg:flex-row xl:flex-row">
+                <div id="guide-area " className="sm:w-full md:w-full lg:w-1/2 xl:w-1/2">
+                    <div  id="guide-header" className="flex flex-row justify-between px-10 pb-1">
+                        <h2>Guide</h2>
+                        
+                        <div className="flex flex-row space-x-2 ">
+
+                            <SmallButton 
+                                label={"Getting Started"}
+                                onClick={showGetStarted}
+                            />
+
+                            <SmallButton 
+                                label={"Using Filters"}
+                                onClick={showUseFilters}
+                            />
+                            <SmallButton 
+                                label={"Contact"}
+                                onClick={showContact}
+                            />
+                        </div>
+                    </div>
+
+                    <div id="guide-body" className="border rounded h-50 hover:bg-gray-900">
+                        <div className="px-5 py-1">
+                            <GuideHeader title={guideTitle} titleTip={guideTip}/>
+                            <GuideBody bodyContentList={guideBody} />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="entry-area" className="sm:w-full md:w-full lg:w-1/2 xl:w-1/2">
+                    <div  id="entry-header" className="flex flex-row justify-between px-10 pb-1">
+                        <h2>Entries</h2>
+                        
+                        <div className="flex flex-row space-x-2 ">
+
+                            <SmallButton 
+                                label={"Refresh"}
+                                onClick={props.handleRefreshClick}
+                            />
+                            <SmallButton 
+                                label={"Create New"}
+                                onClick={props.handleNewEntryClick}
+                            />
+                        </div>
+                    </div>
+                    
+                    <div id="entry-list" className="border rounded h-50">
+                        <ul className={""} >
+                            {props.collection.map((entry)=>{
+                                return (
+                                    <li  key={entry._id}>
+                                        <EntryElement 
+                                            entry={entry}
+                                            onClick={props.handleEntryClick}
+                                            />
+                                    </li>
+                                    
+                                )
+                            })}
+                        </ul>
+                    </div>
+
+                    <div id="entry-footer" className="flex justify-between px-10 pb-1">
+                        <div className="hover:bg-blue-950 rounded">
+                            <p className={message === emptyMessage ? "" : 'px-2'}>{message}</p>
+                        </div>
+
+                        <p className="text-sm mt-1">-last updated: {lastUpdated}-</p>
+                        
+                    </div>
+                </div>
+            </div>
+            
         </div>
     )
+
+
+
+
 }
 
 
@@ -513,11 +745,10 @@ const EntryElement = (props:entryProps) => {
 
     return(
         <div 
-            className="hover:border hover:bg-blue-900 flex justify-between px-2"
+            className="hover:border hover:bg-blue-900 flex px-2 space-x-2"
             onClick={throwEntry}>
             <span>{props.entry.dateMMDDYYYY}</span>
-            <span> --- </span>
-            <span>{props.entry.title}</span>
+            <span className="overflow-x-auto w-full whitespace-nowrap px-1 text-end">{props.entry.title}</span>
         </div>
     )
 }
