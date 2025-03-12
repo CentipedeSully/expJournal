@@ -1,8 +1,7 @@
 import { createPortal } from "react-dom"
 import { Entry } from "./entry"
 import { useState, useEffect, useRef } from "react"
-import Editor from "./Editor"
-import Quill from "quill"
+import { NegativeSmallButton, PositiveSmallButton, SmallButton } from "./uiComponents"
 
 
 const entryModalParent = document.getElementById('overlay-container')
@@ -43,8 +42,7 @@ interface SoloEntryModalProps{
   
 const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
-  const visibilityString = props.showWindow ? "visible " : "hidden "
-  const className = "z-10 w-3/4 h-3/4 mx-auto absolute inset-x-0 rounded " + visibilityString
+  const visibilityString = props.showWindow ? " visible " : " hidden "
 
   const [originEntry,setOriginEntry] = useState(props.entryObj)
   const [title,setTitle] = useState('')
@@ -143,72 +141,169 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     props.handleExit()
   }
 
-    
+  const createBigString = (sample:string, amount:number):string=>{
+    if (amount <= 1)
+      return sample
+    else return (sample + createBigString(sample, amount - 1))
+  }
 
   return(
-    <div className={className }>
-      <div className="py-4 px-4 ">
-        <div className=" border rounded bg-bluesteel">
+    <div id="entry-modal" className={"z-10 w-3/4 mx-auto my-auto absolute inset-x-0 rounded border bg-bluesteel px-4 py-4" + visibilityString}>
 
-          <HeaderArea 
-            handleBackClick={props.handleExit} 
-            handleEnterEditMode={props.handleEnterEdit}
-            handleExitEditMode={props.handleExitEdit}
-            editMode={props.editMode}
-          />
-          <hr />
+      <div className="h-110 flex flex-row space-x-1">
+        <div id="modal-side-area" className=" w-1/4 flex flex-col justify-evenly rounded">
+
+          <div id="modal-side-upper-half" className="flex flex-col h-full justify-between">
+            <div id="modal-header-buttons" className="flex flex-row justify-center space-x-4 ">
+              <SmallButton 
+                  label={"Back"}
+                  onClick={props.handleExit}
+              />
+              <SmallButton 
+                  label={"Edit"}
+                  onClick={props.handleEnterEdit}
+              />
+            </div>
+
+            <div id="category-tags-area" className="flex flex-col rounded-l hover:bg-gray-900">
+
+              <p className="text-center">Categories</p>
+
+              <div className="flex justify-center">
+                <ul className={"h-30 rounded overflow-auto whitespace-nowrap space-y-1.5 pt-0.5 "}>
+                { props.entryObj.categories.map((word)=>{ 
+
+                  const elementId = 'category-tag-' + word
+                  return(
+
+                      <li 
+                          className='rounded text-sm hover:bg-amber-950 w-30  overflow-x-auto bg-gray-800 px-2'
+                          key={word}
+                          id={elementId}>
+                          <div className="text-center overflow-x-auto">
+                            {word}
+                          </div>
+                      </li>
+                  )})}
+                </ul>
+              </div>
+
+            </div>
+          </div>
+
           
-          <form action="" >
-            <div className='grid grid-cols-2 py-3'>
-              <CategoriesArea 
-                editedStringList={categories}
-                stringList={originEntry.categories}
-                editMode={props.editMode}
-                addElement={addCategory}
-                removeElement={removeCategory}
-              />
-              
-              <KeywordsArea 
-                editedStringList={keywords}
-                stringList={originEntry.keywords}
-                editMode={props.editMode} 
-                addElement={addKeyword}
-                removeElement={removeKeyword}
-              />
-            </div>
-            <hr />
-            <div className="">
-              <TitleArea 
-                editedTitle={title} 
-                editedDate={date}
-                title={originEntry.title}
-                date={originEntry.dateMMDDYYYY}
-                editMode={props.editMode}
-                handleUpdateTitle={updateTitle}
-                handleUpdateDate={updateDate}
-              />
-              <ContentArea 
-                content={originEntry.content}
-                editedContent={content}
-                editMode={props.editMode}
-                handleUpdateContent={updateContent}
-              /> 
-            </div>
-            
-          </form>
-          <hr />
+          <div  id="modal-side-lower-half" className="flex flex-col h-full justify-between">
+            <div id="keyword-tags-area" className="flex flex-col rounded-l hover:bg-gray-900">
 
-          <FooterArea 
-            unsavedChangesDetected={changeDetected}
-            handleSave={saveEntry}
-            handleDelete={deleteEntry}
-          />
+              <p className="text-center">Keywords</p>
+
+              <div className="flex justify-center">
+                <ul className={"flex flex-col h-30 overflow-auto whitespace-nowrap space-y-1.5 pt-0.5"}>
+                { props.entryObj.keywords.map((word)=>{ 
+
+                  const elementId = 'keyword-tag-' + word
+                  return(
+
+                      <li 
+                          className='rounded text-sm hover:bg-amber-950 w-30  overflow-x-auto bg-gray-800 px-2 '
+                          key={word}
+                          id={elementId}>
+                          <div className="text-center overflow-x-auto">
+                            {word}
+                          </div>
+                      </li>
+                  )})}
+                </ul>
+              </div>
+
+            </div>
+
+            <div id="modal-footer-buttons" className="flex flex-row justify-center space-x-4">
+              <PositiveSmallButton 
+                  label={"Save"}
+                  onClick={props.handleSaveEntry}
+              />
+              <NegativeSmallButton 
+                  label={"Delete"}
+                  onClick={props.handleDeleteEntry}
+              />
+            </div>
+          </div>
+              
         </div>
+
+        <div id="modal-main-area" className=" ml-2 rounded ">
+          <div id="modal-header-area" className="flex flex-row justify-between px-10 space-x-2 hover:bg-gray-900">
+            <p className="text-2xl overflow-x-auto whitespace-nowrap">{props.entryObj.title}</p>
+            <div className="flex">
+              <p className="text-sm mt-3">{props.entryObj.dateMMDDYYYY}</p>
+            </div>
+          </div>
+          <div id="modal-body-area" className=" hover:bg-gray-900 overflow-y-auto h-102  px-3 py-5 rounded border border-gray-800">
+            <p> {props.entryObj.content}</p>
+          </div>
+        </div>
+          
       </div>
     </div>
   )
 }
 
+/*
+<HeaderArea 
+  handleBackClick={props.handleExit} 
+  handleEnterEditMode={props.handleEnterEdit}
+  handleExitEditMode={props.handleExitEdit}
+  editMode={props.editMode}
+/>
+<hr />
+
+<form action="" >
+  <div className='grid grid-cols-2 py-3'>
+    <CategoriesArea 
+      editedStringList={categories}
+      stringList={originEntry.categories}
+      editMode={props.editMode}
+      addElement={addCategory}
+      removeElement={removeCategory}
+    />
+    
+    <KeywordsArea 
+      editedStringList={keywords}
+      stringList={originEntry.keywords}
+      editMode={props.editMode} 
+      addElement={addKeyword}
+      removeElement={removeKeyword}
+    />
+  </div>
+  <hr />
+  <div className="">
+    <TitleArea 
+      editedTitle={title} 
+      editedDate={date}
+      title={originEntry.title}
+      date={originEntry.dateMMDDYYYY}
+      editMode={props.editMode}
+      handleUpdateTitle={updateTitle}
+      handleUpdateDate={updateDate}
+    />
+    <ContentArea 
+      content={originEntry.content}
+      editedContent={content}
+      editMode={props.editMode}
+      handleUpdateContent={updateContent}
+    /> 
+  </div>
+  
+</form>
+<hr />
+
+<FooterArea 
+  unsavedChangesDetected={changeDetected}
+  handleSave={saveEntry}
+  handleDelete={deleteEntry}
+/>
+*/
 
 
 interface headerProps{
@@ -499,36 +594,19 @@ const HeaderArea = (props:headerProps)=> {
     editMode:boolean,
     handleUpdateContent:any
   }
-  const Delta = Quill.import('delta')
   const ContentArea = (props:stringProps) => {
 
-    const [readOnly, setReadOnly] = useState(!props.editMode);
-
-    const quillRef = useRef()
+    const showOnReadClass = props.editMode? " hidden" : " visible"
+    const showOnEditClass = props.editMode? " visible" : " hidden"
 
     return (
-      <div className='h-83  overflow-auto py-2 px-2'>
-        <Editor
-            ref={quillRef}
-            //@ts-ignore
-            readOnly={readOnly}
-            defaultValue={new Delta()
-              .insert(props.content)
-              .insert('\n')}
-            onSelectionChange={null}
-            onTextChange={null}
-          />
-      </div>
-
-
-      /*
-      <div id="editor" className='h-83  overflow-auto py-2 px-2 '>
+      <div id="editor" className='overflow-auto py-2 px-2 '>
         <p className={showOnReadClass}>{props.content}</p>
         <textarea 
             className={"block w-full h-full rounded border px-2" + showOnEditClass} 
             value={props.editedContent} 
             onChange={props.handleUpdateContent}/>
-      </div>*/
+      </div>
     )
   }
 

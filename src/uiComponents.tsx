@@ -31,6 +31,34 @@ export const SmallButton = (props:ButtonProps) =>{
     )
 }
 
+export const PositiveSmallButton = (props:ButtonProps) =>{
+
+
+    return (
+        <div className="">
+            <button 
+                className="bg-green-950 text-sm  hover:bg-green-700 hover:text-zinc-900 rounded px-4"
+                onClick={props.onClick}>
+                    {props.label}
+            </button>
+        </div>
+    )
+}
+
+export const NegativeSmallButton = (props:ButtonProps) =>{
+
+
+    return (
+        <div className="">
+            <button 
+                className="bg-red-950 text-sm  hover:bg-red-900 hover:text-zinc-900 rounded px-4"
+                onClick={props.onClick}>
+                    {props.label}
+            </button>
+        </div>
+    )
+}
+
 
 interface InputProps{
     elementId:string,
