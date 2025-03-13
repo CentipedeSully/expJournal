@@ -5,3 +5,15 @@
     --color-bluesteel: #0e151e;
     --color-lightwheat: #ffd388;
 }
+
+/* remove outline */
+.ProseMirror:focus {
+    /*outline: none;*/
+}
+
+/* set */
+.ProseMirror {        
+min-height: 370px;
+max-height: 370px;
+overflow-y: auto;
+}

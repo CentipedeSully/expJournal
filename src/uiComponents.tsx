@@ -21,7 +21,7 @@ export const SmallButton = (props:ButtonProps) =>{
 
 
     return (
-        <div className="">
+        <div className="whitespace-nowrap">
             <button 
                 className="bg-gray-400 text-bluesteel text-sm  hover:bg-white hover:text-zinc-900 rounded px-4"
                 onClick={props.onClick}>
@@ -35,7 +35,7 @@ export const PositiveSmallButton = (props:ButtonProps) =>{
 
 
     return (
-        <div className="">
+        <div className="whitespace-nowrap">
             <button 
                 className="bg-green-950 text-sm  hover:bg-green-700 hover:text-zinc-900 rounded px-4"
                 onClick={props.onClick}>
@@ -49,7 +49,7 @@ export const NegativeSmallButton = (props:ButtonProps) =>{
 
 
     return (
-        <div className="">
+        <div className="whitespace-nowrap">
             <button 
                 className="bg-red-950 text-sm  hover:bg-red-900 hover:text-zinc-900 rounded px-4"
                 onClick={props.onClick}>

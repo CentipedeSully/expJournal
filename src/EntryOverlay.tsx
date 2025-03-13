@@ -1,7 +1,10 @@
 import { createPortal } from "react-dom"
 import { Entry } from "./entry"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { NegativeSmallButton, PositiveSmallButton, SmallButton } from "./uiComponents"
+import Tiptap from "./TiptapEditor"
+import { useCurrentEditor } from "@tiptap/react"
+import Editor from "./Editor"
 
 
 const entryModalParent = document.getElementById('overlay-container')
@@ -13,9 +16,6 @@ const EntryOverlay = (props:SoloEntryModalProps) => {
                 showWindow={props.showWindow} 
                 entryObj={props.entryObj}
                 handleExit={props.handleExit}
-                editMode={props.editMode}
-                handleEnterEdit={props.handleEnterEdit}
-                handleExitEdit={props.handleExitEdit}
                 handleSaveEntry={props.handleSaveEntry}
                 handleDeleteEntry={props.handleDeleteEntry}
                 />,
@@ -33,9 +33,6 @@ interface SoloEntryModalProps{
     showWindow:boolean,
     entryObj:Entry | null,
     handleExit:any,
-    handleEnterEdit:any,
-    handleExitEdit:any,
-    editMode:boolean,
     handleSaveEntry:any,
     handleDeleteEntry:any
 }
@@ -43,6 +40,7 @@ interface SoloEntryModalProps{
 const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
   const visibilityString = props.showWindow ? " visible " : " hidden "
+  
 
   const [originEntry,setOriginEntry] = useState(props.entryObj)
   const [title,setTitle] = useState('')
@@ -53,6 +51,11 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
   const [changeDetected, setChangeDetected] = useState(false)
 
+  const [editMode, setEditmode] = useState(false)
+
+  const showIfEditEnabled = editMode? " visible": " hidden"
+  const showIfEditDisabled = editMode? " hidden": " visible"
+
   useEffect(()=>{
     setOriginEntry(props.entryObj)
     setTitle(props.entryObj.title)
@@ -60,6 +63,8 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     setContent(props.entryObj.content)
     setCategories(props.entryObj.categories)
     setKeywords(props.entryObj.keywords)
+
+
   },[props.entryObj])
 
 
@@ -70,7 +75,11 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     setChangeDetected(false)
   }
 
-    
+  const switchEditMode = ()=>{
+    const currentMode = editMode;
+    setEditmode(!currentMode)
+  }
+
 
   const updateTitle = (event:any)=>{
     const newTitle = event.target.value
@@ -86,6 +95,15 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     const newContent = event.target.value
     setContent(newContent)
     detectChange()
+  }
+
+  const updateContentFromEditor = (html:any) => {
+    const newContent = html
+    console.log(typeof(html))
+    setContent(newContent)
+    detectChange()
+
+    console.log("Updated html:",html)
   }
   const addKeyword= (word:string) => {
     if (!keywords.includes(word)){
@@ -133,11 +151,16 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
     }
 
     props.handleSaveEntry(updatedEntry)
-    props.handleExit()
+    cleanUpAndExit()
   }
 
   const deleteEntry= () =>{
     props.handleDeleteEntry(props.entryObj._id)
+    cleanUpAndExit()
+  }
+
+  const cleanUpAndExit = () =>{
+    setEditmode(false)
     props.handleExit()
   }
 
@@ -148,24 +171,24 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
   }
 
   return(
-    <div id="entry-modal" className={"z-10 w-3/4 mx-auto my-auto absolute inset-x-0 rounded border bg-bluesteel px-4 py-4" + visibilityString}>
+    <div id="entry-modal" className={"z-10 w-3/4 mx-auto my-auto absolute  inset-x-0 rounded border bg-bluesteel" + visibilityString}>
 
-      <div className="h-110 flex flex-row space-x-1">
-        <div id="modal-side-area" className=" w-1/4 flex flex-col justify-evenly rounded">
+      <form className="h-110 flex flex-row space-x-1 px-4 my-4" onSubmit={(event)=>{event.preventDefault()}}>
+        <div id="modal-side-area" className=" w-1/4 flex flex-col justify-evenly">
 
           <div id="modal-side-upper-half" className="flex flex-col h-full justify-between">
-            <div id="modal-header-buttons" className="flex flex-row justify-center space-x-4 ">
+            <div id="modal-header-buttons" className="flex sm:flex-col  md:flex-col lg:flex-row lx:flex-row  justify-center space-x-4 ">
               <SmallButton 
                   label={"Back"}
-                  onClick={props.handleExit}
+                  onClick={cleanUpAndExit}
               />
               <SmallButton 
-                  label={"Edit"}
-                  onClick={props.handleEnterEdit}
+                  label={editMode? "Edit: On" : "Edit: Off"}
+                  onClick={switchEditMode}
               />
             </div>
 
-            <div id="category-tags-area" className="flex flex-col rounded-l hover:bg-gray-900">
+            <div id="category-tags-area" className="flex flex-col rounded">
 
               <p className="text-center">Categories</p>
 
@@ -193,7 +216,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
           
           <div  id="modal-side-lower-half" className="flex flex-col h-full justify-between">
-            <div id="keyword-tags-area" className="flex flex-col rounded-l hover:bg-gray-900">
+            <div id="keyword-tags-area" className="flex flex-col rounded">
 
               <p className="text-center">Keywords</p>
 
@@ -217,34 +240,51 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
               </div>
 
             </div>
-
-            <div id="modal-footer-buttons" className="flex flex-row justify-center space-x-4">
-              <PositiveSmallButton 
-                  label={"Save"}
-                  onClick={props.handleSaveEntry}
-              />
-              <NegativeSmallButton 
-                  label={"Delete"}
-                  onClick={props.handleDeleteEntry}
-              />
+            
+            <div id="modal-footer-buttons">
+              <div className={"flex sm:flex-col-reverse  md:flex-col lg:flex-row lx:flex-row justify-center space-x-4 " + showIfEditEnabled}>
+                <PositiveSmallButton 
+                    label={"Save"}
+                    onClick={saveEntry}
+                />
+                <NegativeSmallButton 
+                    label={"Delete"}
+                    onClick={deleteEntry}
+                />
+              </div>
             </div>
+            
           </div>
               
         </div>
 
-        <div id="modal-main-area" className=" ml-2 rounded ">
-          <div id="modal-header-area" className="flex flex-row justify-between px-10 space-x-2 hover:bg-gray-900">
-            <p className="text-2xl overflow-x-auto whitespace-nowrap">{props.entryObj.title}</p>
+
+        <div id="modal-main-area" className=" ml-2 rounded w-3/4">
+          <div id="modal-header-area" className="flex flex-row justify-between space-x-2 mb-3">
+
+            <p id="modal-original-title" className={"text-2xl overflow-x-auto whitespace-nowrap" + showIfEditDisabled}>{props.entryObj.title}</p>
+            <input id="modal-edited-title" className={"text-2xl w-full rounded hover:bg-gray-800" + showIfEditEnabled}
+              value={title}
+              onChange={updateTitle}/>
+
             <div className="flex">
-              <p className="text-sm mt-3">{props.entryObj.dateMMDDYYYY}</p>
+              <p id="modal-original-date" className={"text-sm mt-3 " + showIfEditDisabled}>{props.entryObj.dateMMDDYYYY}</p>
+              <input id="modal-edited-date" className={"text-sm mt-2 w-full text-end hover:bg-gray-800 rounded " + showIfEditEnabled}
+              value={date}
+              onChange={updateDate}/>
             </div>
+
           </div>
-          <div id="modal-body-area" className=" hover:bg-gray-900 overflow-y-auto h-102  px-3 py-5 rounded border border-gray-800">
-            <p> {props.entryObj.content}</p>
+          <div id="modal-body-area" className="">
+            <div id="modal-editor" className="">
+              <Tiptap 
+                onChange={updateContentFromEditor}
+                content={content}/>
+            </div>
           </div>
         </div>
           
-      </div>
+      </form>
     </div>
   )
 }

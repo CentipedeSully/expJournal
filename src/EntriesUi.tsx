@@ -403,7 +403,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
 
     const gettingStartedTitle = "Getting Started"
-    const gettingStartedTip = "( ^ Select a topic for specific advice ^ )"
+    const gettingStartedTip = "( ^ Select a topic )"
     const gettingStartedBodyContent = [
         {
             key:'0',
@@ -468,7 +468,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
     ]
 
     const contactTitle = "Contact Info"
-    const contactTip = "Reach out if you need help with a project!"
+    const contactTip = "Need help? Reach out!"
     const contactContent=[
         {
             key:'0',
@@ -649,7 +649,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
     return (
         <div>
-            <div id="content-area" className="flex justify-end gap-2 sm:flex-col-reverse md:flex-col-reverse lg:flex-row xl:flex-row">
+            <div id="content-area" className="flex gap-2 sm:flex-col-reverse md:flex-col-reverse lg:flex-row xl:flex-row">
                 <div id="guide-area " className="sm:w-full md:w-full lg:w-1/2 xl:w-1/2">
                     <div  id="guide-header" className="flex flex-row justify-between px-10 pb-1">
                         <h2>Guide</h2>
@@ -662,7 +662,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                             />
 
                             <SmallButton 
-                                label={"Using Filters"}
+                                label={"Filters"}
                                 onClick={showUseFilters}
                             />
                             <SmallButton 
