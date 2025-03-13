@@ -99,11 +99,11 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
   const updateContentFromEditor = (html:any) => {
     const newContent = html
-    console.log(typeof(html))
+    console.log("Received updated HTML(outside the editor, within the overlay):\n",html)
     setContent(newContent)
     detectChange()
 
-    console.log("Updated html:",html)
+    //console.log("Updated html:",html)
   }
   const addKeyword= (word:string) => {
     if (!keywords.includes(word)){
@@ -149,7 +149,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
       dateMMDDYYYY:date,
       _id:props.entryObj._id
     }
-
+    console.log("Saving Entry to DB with below content:\n",updatedEntry.content)
     props.handleSaveEntry(updatedEntry)
     cleanUpAndExit()
   }
@@ -279,7 +279,8 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
             <div id="modal-editor" className="">
               <Tiptap 
                 onChange={updateContentFromEditor}
-                content={content}/>
+                originalContent={props.entryObj.content}
+                editMode={editMode}/>
             </div>
           </div>
         </div>

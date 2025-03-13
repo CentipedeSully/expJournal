@@ -266,7 +266,6 @@ function App() {
   const [entries,setCollection] = useState([emptyEntry])
   const [viewedEntry, setViewedEntry] = useState(emptyEntry)
   const [showEntryWindow,setShowEntryWindow] = useState(false)
-  const [editMode,setMode] = useState(false)
   const [ignoreClicks, setIgnoreClicks] = useState(false)
   const [dbOperationCode, setDbCode] = useState(0)
 
@@ -285,13 +284,6 @@ function App() {
   useEffect(()=>{
     getCollectionFromDb()
   },[])
-
-  const enterEditMode = () =>{
-      setMode(true)
-  }
-  const exitEditMode = () => {
-      setMode(false)
-  }
     
   const enterViewScreen = () =>{
     setUi("viewCollection")
@@ -308,8 +300,7 @@ function App() {
     setIgnoreClicks(true)
   }
 
-  const exitEditModeAndCloseModal = () =>{
-    exitEditMode()
+  const closeModal = () =>{
     hideEntryModal()
   }
 
@@ -320,7 +311,6 @@ function App() {
       updateEntryInDb(entry)
       const newTemporaryLocalCollection = entries.filter(item => item._id !== entry._id)
       setCollection(newTemporaryLocalCollection)
-      //setTimeout(getCollectionFromDb,2000)
     }
       
     
@@ -335,7 +325,6 @@ function App() {
       }
 
       addEntryToDb(newEntry)
-      //setTimeout(getCollectionFromDb,2000)
     }
     
 
@@ -353,7 +342,6 @@ function App() {
       removeEntryFromDb(id)
       const newTemporaryLocalCollection = entries.filter(item => item._id !== id)
       setCollection(newTemporaryLocalCollection)
-      //setTimeout(getCollectionFromDb,2000)
     }
   }
 
@@ -368,10 +356,7 @@ function App() {
           <EntryOverlay 
             showWindow={showEntryWindow} 
             entryObj={viewedEntry}
-            handleExit={exitEditModeAndCloseModal}
-            editMode={editMode}
-            handleEnterEdit={enterEditMode}
-            handleExitEdit={exitEditMode}
+            handleExit={closeModal}
             handleSaveEntry={saveEntryToApp}
             handleDeleteEntry={deleteEntry}
             />
@@ -390,10 +375,7 @@ function App() {
           <EntryOverlay 
             showWindow={showEntryWindow} 
             entryObj={viewedEntry}
-            handleExit={exitEditModeAndCloseModal}
-            editMode={editMode}
-            handleEnterEdit={enterEditMode}
-            handleExitEdit={exitEditMode}
+            handleExit={closeModal}
             handleSaveEntry={saveEntryToApp}
             handleDeleteEntry={deleteEntry}
             />

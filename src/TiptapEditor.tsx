@@ -1,50 +1,109 @@
 // src/Tiptap.tsx
-import { useEditor, FloatingMenu, BubbleMenu, EditorContent } from '@tiptap/react'
+import { useEditor, FloatingMenu, BubbleMenu, EditorContent, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 // define your extension array
 const extensions = [
-    StarterKit
-    ]
+    StarterKit.configure({
 
-const content = '<p>Hello World!</p>'
+        bulletList:{
+            HTMLAttributes:{
+                class: 'list-disc ml-4'
+            }
+        }
+
+    })
+    ]
 
 
 interface tiptapProps{
     onChange:any
-    content:any
+    originalContent:any
+    editMode:boolean
 }
 const Tiptap = (props:tiptapProps) => {
 
+    //Used to show/hide changes made to the document when toggling edit mode
+    const [originalContent, setOriginalContent] = useState('')
+    const [edits, setEdits] = useState("");
     const editor = useEditor({
-        extensions,
-        content,
-    })
-
+      extensions: [StarterKit],
+      onUpdate({ editor }) {
+        const newHTML = editor.getHTML()
+        if (edits !== newHTML){
+            saveEdits()
+        }
+      },
+       
+    });
+    
+    //reset the editor to a newly-loaded entry
     useEffect(()=>{
-        editor.commands.setContent(props.content)
-    },[props.content])
+        setOriginalContent(props.originalContent)
+        setEdits(props.originalContent)
+        editor.commands.setContent(props.originalContent)
+    },[props.originalContent])
 
-    editor.on('update', ({editor}) =>{
-        console.log("change occured in editor")
-        props.onChange(editor.getHTML())
-    })
+    //if the editmode changes, then 
+    // either show the current changes made(active editmode) 
+    // or show the unchanged document
+    useEffect(()=>{
+        props.editMode? editor.setEditable(true) : editor.setEditable(false)
+
+        if (props.editMode){
+            editor.commands.setContent(edits)
+            saveEdits()
+            
+        }
+        else {
+            //change the content back to the original document
+            editor.commands.setContent(originalContent)
+        }
+    },[props.editMode])
+
+    //save any changes
+    const saveEdits = ()=>{
+        const newEdits = editor.getHTML()
+        setEdits(newEdits)
+        props.onChange(newEdits)
+    }
 
     const activateBold = ()=>{
-        editor.chain().toggleBold().run()
+        if (editor.isEditable){
+            editor.chain().toggleBold().run()
+            saveEdits()
+        }
+
     }
 
     const activateItalic = ()=>{
-        editor.chain().toggleItalic().run()
+        if (editor.isEditable){
+            editor.chain().toggleItalic().run()
+            saveEdits()
+        }
     }
 
+    const activateStrike = ()=>{
+        if (editor.isEditable){
+            editor.chain().toggleStrike().run()
+            saveEdits()
+        }
+    }
 
+    const activateList = ()=>{
+        if (editor.isEditable){
+            editor.chain().toggleBulletList().run()
+            saveEdits()
+        }
+    }
     return (
         <div className='rounded'>
             <div id='editor-menu' className='flex flex-row bg-gray-800 rounded-t'>
                 <TiptapButton label='Bold' handleClick={activateBold} className={editor.isActive('bold') ? 'is-active' : ''}/>
                 <TiptapButton label="Itaclic" handleClick={activateItalic} className={editor.isActive('italic') ? 'is-active' : ''}/>
+                <TiptapButton label="Strike" handleClick={activateStrike} className={editor.isActive('strike') ? 'is-active' : ''}/>
+                <TiptapButton label="Unordered List" handleClick={activateList} className={editor.isActive('bulletList') ? 'is-active' : ''}/>
                     
             </div>
             <div className='rounded-b'>
