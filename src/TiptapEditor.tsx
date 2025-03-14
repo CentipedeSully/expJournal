@@ -1,20 +1,7 @@
 // src/Tiptap.tsx
-import { useEditor, FloatingMenu, BubbleMenu, EditorContent, useEditorState } from '@tiptap/react'
+import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { useEffect, useState } from 'react'
-
-// define your extension array
-const extensions = [
-    StarterKit.configure({
-
-        bulletList:{
-            HTMLAttributes:{
-                class: 'list-disc ml-4'
-            }
-        }
-
-    })
-    ]
 
 
 interface tiptapProps{
@@ -28,7 +15,15 @@ const Tiptap = (props:tiptapProps) => {
     const [originalContent, setOriginalContent] = useState('')
     const [edits, setEdits] = useState("");
     const editor = useEditor({
-      extensions: [StarterKit],
+      extensions: [StarterKit.configure({
+
+        bulletList:{
+            HTMLAttributes:{
+                class: 'list-disc ml-5'
+            }
+        }
+
+    })],
       onUpdate({ editor }) {
         const newHTML = editor.getHTML()
         if (edits !== newHTML){

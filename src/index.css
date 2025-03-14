@@ -1,14 +1,10 @@
 @import 'tailwindcss';
+@import"@tailwindcss/typography";
 
 @theme {
     --color-rust: #cf6f30;
     --color-bluesteel: #0e151e;
     --color-lightwheat: #ffd388;
-}
-
-/* remove outline */
-.ProseMirror:focus {
-    /*outline: none;*/
 }
 
 /* set */
