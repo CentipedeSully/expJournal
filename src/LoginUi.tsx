@@ -6,6 +6,7 @@ interface loginProps{
     enterViewScreenHandler:any
     handleSignInSubmit:any
     signInErr:string
+    isLoggingIn:boolean
 }
 
 const LoginUi = (props:loginProps) => {
@@ -15,7 +16,7 @@ const [user, setUser] = useState("")
 const [password, setPassword] = useState("")
 
 const showErrIfNotEmpty = props.signInErr.length > 0 ? " visible px-3" : " hidden"
-
+const showLoginWait = props.isLoggingIn ? " visible": "hidden"
 
 const updateUsername = (event:any) => {
   const newUser = event.target.value
@@ -79,6 +80,7 @@ const handleSubmit = async (e:any) => {
                 </button>
               </form>
 
+              <div className={"" + showLoginWait}>Loggin In . . .</div>
               <div className={"mt-3 rounded max-w-80 border border-red-800 hover:bg-red-950 " + showErrIfNotEmpty}>{props.signInErr}</div>
 
 

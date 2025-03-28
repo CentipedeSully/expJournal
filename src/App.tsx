@@ -270,6 +270,7 @@ function App() {
   const [loginErr, setLoginErr] = useState('')
   const [isAuthenticated, setAuth] = useState(false)
   const [isGuest,setGuestStatus] = useState(false)
+  const [isLoggingOn,setLoginCommsStatus] = useState(false)
 
       /*Db operation Codes:
         0: nothing/idle
@@ -397,6 +398,7 @@ function App() {
 
   const validateLogin = (user:string, pass:string) =>{
     if (appMode === 'development'){
+      setLoginCommsStatus(true)
 
       const signinData = 
       {
@@ -413,20 +415,26 @@ function App() {
           setUser(user)
           setGuestStatus(false)
           setLoginErr('')
+          setLoginCommsStatus(false)
         }
         else{
           console.log("Response recieved, client issue")
+          setLoginCommsStatus(false)
           setLoginErr("Incorrect Login Credentials")
           
         }
       })
       .catch(error =>{
         console.log("An unexpected error occurred",error)
+        setLoginCommsStatus(false)
         setLoginErr("Incorrect Login Credentials")
       })
     }
 
     else{
+
+      setLoginCommsStatus(true)
+
       const signinData = 
       {
         username:user,
@@ -442,15 +450,18 @@ function App() {
           setUser(user)
           setGuestStatus(false)
           setLoginErr('')
+          setLoginCommsStatus(false)
         }
         else{
           console.log("Response recieved, client issue")
+          setLoginCommsStatus(false)
           setLoginErr("Incorrect Login Credentials")
           
         }
       })
       .catch(error =>{
         console.log("An unexpected error occurred",error)
+        setLoginCommsStatus(false)
         setLoginErr("Incorrect Login Credentials")
       })
     }
@@ -514,7 +525,10 @@ function App() {
         <LoginUi  
           enterViewScreenHandler={enterAsGuest} 
           handleSignInSubmit={validateLogin}
-          signInErr={loginErr}/>
+          signInErr={loginErr}
+          isLoggingIn={isLoggingOn}
+        />
+          
       </div>
     )
   }
