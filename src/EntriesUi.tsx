@@ -9,7 +9,9 @@ interface EntryUiProps{
     dbOperationCode:number
     handleWriteNewEntry:any,
     handleClickEntry:any,
-    handleRefreshClick:any
+    handleRefreshClick:any,
+    handleLogout:any,
+    user:string
 }
 
 
@@ -100,7 +102,9 @@ const EntriesUi = (props:EntryUiProps)=> {
     return(
       <div className="flex flex-col px-10">
         
-        <CollectionHeader />
+        <CollectionHeader 
+            user={props.user}
+            handleLogout={props.handleLogout}/>
         <FilterArea
             handleTitleInputChange={updateTitleFilter}
             handleAddCategoryToFilter={addCategory}
@@ -125,12 +129,33 @@ const EntriesUi = (props:EntryUiProps)=> {
 export default EntriesUi
 
 
+interface headerProps{
+    user:string,
+    handleLogout:any
+}
 
-
-const CollectionHeader = () =>{
+const CollectionHeader = (props:headerProps) =>{
     return(
         <div className="px-10">
-            <h1 className="text-4xl">Archive</h1>
+            <div className="flex flex-row space-x-5">
+                <h1 className="text-4xl">Archive</h1>
+                
+                <div className="flex flex-row text-sm mt-auto space-x-1">
+                    <p>[ </p>
+                    <p className="text-amber-600"> Viewing as '{props.user}' </p>
+                    <p> ]</p>
+                </div>
+
+                <div className="mt-auto">
+                    <SmallButton 
+                        label="Logout"
+                        onClick={props.handleLogout}
+                    />
+                </div>
+                
+                
+                
+            </div>
         </div>
     )
 }
@@ -387,6 +412,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
         4: Updating Db
         5: Db Update Success
         6: Db Update Failure
+        7: Restricted Action
     */
 
     const emptyMessage = ""
@@ -400,6 +426,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
     const dbUpdateInProgress = "sending data . . ."
     const dbUpdateSuccess = "database UPDATED"
     const dbUpdateFailure = "FAILED to update database"
+    const restrictedAction = "- Guests may only read entries -"
 
 
     const gettingStartedTitle = "Getting Started"
@@ -562,6 +589,11 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                 setMessage(dbUpdateFailure)
                 break;
 
+            case 7:
+                setMessage(restrictedAction)
+                trackNewTimeout(setTimeout(timeOutmessage,5000))
+                break;
+
             default:
                 setMessage(emptyMessage)
                 break;
@@ -682,7 +714,9 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
                 <div id="entry-area" className="sm:w-full md:w-full lg:w-1/2 xl:w-1/2">
                     <div  id="entry-header" className="flex flex-row justify-between px-10 pb-1">
-                        <h2>Entries</h2>
+                        <div>
+                            <h2>Entries</h2>                            
+                        </div>
                         
                         <div className="flex flex-row space-x-2 ">
 

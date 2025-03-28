@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import WelcomeUi from "./WelcomeUi"
 import EntriesUi from "./EntriesUi"
 import EntryOverlay from "./EntryOverlay"
 import { Entry } from "./entry"
 import axios, { AxiosResponse } from "axios"
+import LoginUi from "./LoginUi"
+
 
 
 console.log("App mode:", import.meta.env.MODE)
@@ -19,9 +20,7 @@ const ResponseResults = Object.freeze({
   undefined:'UNDEFINED_RESPONSE_CASE'
 })
 
-const timeOut = {
-  timeout: 6000
-}
+axios.defaults.withCredentials = true
 
 
 
@@ -236,7 +235,7 @@ function App() {
       //show the attempt to user
       setDbCode(4)
 
-      axios.delete(prodBackendUrl+ `/${id}`,)
+      axios.delete(prodBackendUrl+ `/${id}`)
       .then((response)=>{
         if (handleResponse(response) === ResponseResults.success){
           setDbCode(5)
@@ -262,12 +261,15 @@ function App() {
 
   }
 
-  const [currentUi, setUi] = useState("welcome")
   const [entries,setCollection] = useState([emptyEntry])
   const [viewedEntry, setViewedEntry] = useState(emptyEntry)
   const [showEntryWindow,setShowEntryWindow] = useState(false)
   const [ignoreClicks, setIgnoreClicks] = useState(false)
   const [dbOperationCode, setDbCode] = useState(0)
+  const [username, setUser] = useState("")
+  const [loginErr, setLoginErr] = useState('')
+  const [isAuthenticated, setAuth] = useState(false)
+  const [isGuest,setGuestStatus] = useState(false)
 
       /*Db operation Codes:
         0: nothing/idle
@@ -277,6 +279,7 @@ function App() {
         4: Updating Db
         5: Db Update Success
         6: Db Update Failure
+        7: Restricted Action
     */
 
 
@@ -285,8 +288,11 @@ function App() {
     getCollectionFromDb()
   },[])
     
-  const enterViewScreen = () =>{
-    setUi("viewCollection")
+  const enterAsGuest = () =>{
+    setUser("Guest")
+    setGuestStatus(true)
+    setAuth(true)
+    setLoginErr('')
   }
 
   const hideEntryModal = () =>{
@@ -305,6 +311,13 @@ function App() {
   }
 
   const saveEntryToApp= (entry:Entry) =>{
+
+    if (isGuest){
+      console.log("Ignoring guest's attempt to EDIT the entry")
+      setDbCode(7)
+      return
+    }
+      
 
     console.log("entry to save: ",entry)
     if (entry._id.length > 0){
@@ -338,6 +351,12 @@ function App() {
   }
 
   const deleteEntry = (id:string) => {
+    if (isGuest){
+      console.log("Ignoring guest's attempt to DELETE the entry")
+      setDbCode(7)
+      return
+    }
+
     if (id.length > 0){
       removeEntryFromDb(id)
       const newTemporaryLocalCollection = entries.filter(item => item._id !== id)
@@ -347,44 +366,128 @@ function App() {
 
   const pointerEventsClass = ignoreClicks ? " pointer-events-none" : " pointer-events-auto"
 
+  /*
+  const createAdmin = (user:string, pass:string) =>{
+    if (appMode === 'development'){
 
-  switch(currentUi){
+      const newAdminData = 
+      {
+        username:user,
+        password:pass
+      }
+      axios.post(import.meta.env.VITE_DEV_BACKEND + '/create-admin', newAdminData)
+      .then((response)=>{
+        if (handleResponse(response) === ResponseResults.success){
+          console.log("Admin saved")
+          setUser(user)
+        }
+        else{
+          console.log("An unexpected error occurred")
+          setLoginErr(response.data)
+          
+        }
+      })
+      .catch(error =>{
+        console.log("An unexpected error occurred")
+        setLoginErr("Error communicating with User DB")
+      })
+    }
+    
+  }*/
 
-    case "viewCollection":
-      return (
-        <div className={pointerEventsClass}>
-          <EntryOverlay 
-            showWindow={showEntryWindow} 
-            entryObj={viewedEntry}
-            handleExit={closeModal}
-            handleSaveEntry={saveEntryToApp}
-            handleDeleteEntry={deleteEntry}
-            />
-          <EntriesUi 
-            collection={entries} 
-            dbOperationCode={dbOperationCode}
-            handleWriteNewEntry={showEmptyModal}
-            handleClickEntry={viewEntryInModal}
-            handleRefreshClick={getCollectionFromDb}/>
-        </div>
-      )
+  const validateLogin = (user:string, pass:string) =>{
+    if (appMode === 'development'){
 
-    default:
-      return (
-        <div className={pointerEventsClass}>
-          <EntryOverlay 
-            showWindow={showEntryWindow} 
-            entryObj={viewedEntry}
-            handleExit={closeModal}
-            handleSaveEntry={saveEntryToApp}
-            handleDeleteEntry={deleteEntry}
-            />
-          <WelcomeUi 
-            username="Centisully" 
-            enterViewScreenHandler={enterViewScreen} 
-            enterWriteScreenHandler={showEmptyModal}/>
-        </div>
-      )
+      const signinData = 
+      {
+        username:user,
+        password:pass
+      }
+
+      axios.post(import.meta.env.VITE_DEV_BACKEND + '/login',signinData)
+
+      .then((response)=>{
+        if (handleResponse(response) === ResponseResults.success){
+          console.log(response)
+          setAuth(true)
+          setUser(user)
+          setGuestStatus(false)
+          setLoginErr('')
+        }
+        else{
+          console.log("Response recieved, client issue")
+          setLoginErr("Incorrect Login Credentials")
+          
+        }
+      })
+      .catch(error =>{
+        console.log("An unexpected error occurred",error)
+        setLoginErr("Incorrect Login Credentials")
+      })
+    }
+  }
+
+  const logout = ()=>{
+    
+    if (appMode === "development"){
+      axios.post(import.meta.env.VITE_DEV_BACKEND + `/logout`,{})
+      .then((result) =>{
+
+        setUser('')
+        setAuth(false)
+        setGuestStatus(false)
+      })
+      .catch((err)=>{
+        console.log("Server error:",err)
+      })
+    }
+
+    else {
+      axios.post(import.meta.env.VITE_PROD_BACKEND + `/logout`,{})
+      .then((result) =>{
+
+        setUser('')
+        setAuth(false)
+        setGuestStatus(false)
+      })
+      .catch((err)=>{
+        console.log("Server error:",err)
+      })
+    }
+    
+  }
+
+  if(isAuthenticated){
+    return (
+      <div className={pointerEventsClass}>
+        <EntryOverlay 
+          showWindow={showEntryWindow} 
+          entryObj={viewedEntry}
+          handleExit={closeModal}
+          handleSaveEntry={saveEntryToApp}
+          handleDeleteEntry={deleteEntry}
+          />
+        <EntriesUi 
+          collection={entries} 
+          dbOperationCode={dbOperationCode}
+          handleWriteNewEntry={showEmptyModal}
+          handleClickEntry={viewEntryInModal}
+          handleRefreshClick={getCollectionFromDb}
+          handleLogout={logout}
+          user={username}/>
+      </div>
+    )
+  }
+
+  else{
+    return (
+      <div className={pointerEventsClass}>
+        <LoginUi  
+          enterViewScreenHandler={enterAsGuest} 
+          handleSignInSubmit={validateLogin}
+          signInErr={loginErr}/>
+      </div>
+    )
   }
 }
 

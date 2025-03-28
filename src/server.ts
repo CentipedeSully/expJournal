@@ -3,10 +3,24 @@ dotenv.config()
 import {Secret} from "jsonwebtoken"
 import mongoose from "mongoose"
 import express from "express"
+import expressSession from "express-session"
 import cors from "cors"
+import bcrypt from 'bcryptjs'
+import passport from 'passport'
+import * as passportLocal from 'passport-local'
 
 
-//use express
+
+let appMode = ''
+if (process.argv.includes("--dev"))
+    appMode = "dev"
+else appMode = "prod"
+
+//set port
+const PORT = process.env.PORT || 8080
+
+
+//use express & express json util
 const app = express()
 app.use(express.json())
 
@@ -14,7 +28,7 @@ app.use(express.json())
 //determine the cors origin via build mode (either dev or production)
 let corsOriginOption = ''
 
-if (process.argv.includes("--dev")){
+if (appMode === "dev"){
     console.log("dev mode detected.\nUpdating cors origin")
     corsOriginOption = process.env.CORS_ORIGIN_DEVELOPMENT
 }
@@ -26,12 +40,31 @@ else{
 const corsOrigin = corsOriginOption
 const corsOptions = {
     origin: corsOrigin,
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
+    credentials: true
 }
 
 app.use(cors(corsOptions))
 
 
+//setup session options
+const sessionOptions = {
+    secret: process.env.SESSION_SECRET || "secret",
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+        httpOnly: true,
+        //sameSite: `${appMode === "prod" ? "none" : "lax"}`, // cross site // set lax while working with http:localhost, but none when in prod
+        secure: appMode === "prod" ? true : "auto", // only https // auto when in development, true when in prod
+        maxAge: 60000 * 60 //1hr
+    }
+}
+//@ts-ignore
+app.use(expressSession(sessionOptions))
+app.use(passport.session())
+
+
+//setup database connection & define schemas & models
 const dbEntryCollectionName:string = 'journalEntries'
 const uri = process.env.DATABASE_URI as Secret
 
@@ -46,15 +79,221 @@ const entrySchema = new mongoose.Schema({
 }, {collection: `${dbEntryCollectionName}`})
 const journalEntry = mongoose.model('journalEntry',entrySchema)
 
+const adminSchema = new mongoose.Schema({
+    username: {type: String},
+    password: {type: String}
+}, {collection: "admins"})
+const Admin = mongoose.model('admin',adminSchema)
 
 
-//visit server
+
+
+//password hashing/comparing utilities
+async function hashPassword(password:string){
+    const hashedPassword = await bcrypt.hash(password,10) 
+    return hashedPassword
+}
+
+async function comparePassword(password:string, hash:string){
+    const doesPasswordMatch = await bcrypt.compare(password, hash)
+    return doesPasswordMatch
+}
+
+async function findMatches(username:string, password:string){
+    for await (const user of Admin.find({username:username})){
+        if (await comparePassword(password, user.password)){
+            return user
+        }
+    }
+    return null
+}
+
+
+
+//setup authentication middleware
+//-- local strategy
+const LocalStrategy = passportLocal.Strategy
+passport.use(new LocalStrategy(
+    
+    (username:string, password:string, done:any)=>{
+
+        //check if the username exists
+        Admin.countDocuments({username}).exec()
+        .then((result) =>{
+            if (result > 0){
+                //Username exists. Check if the provided password belongs to any of the matching usernames
+                findMatches(username,password)
+                .then(result =>{
+                    if (result != null){
+                        console.log("Authentication Success")
+                        return done(null, result)
+                    }
+                    else
+                    {
+                        console.log("Authentication Failed. User password incorrect")
+                        return done(null,false)
+                    }
+                })
+                .catch(err =>{
+                    console.log("Authentication Aborted. An error occured during user lookup:\n",err)
+                    return done(err)
+                })
+                
+            }
+            else{
+                console.log("Authentication Failed. User not found")
+                return done(null,false)
+            }
+        })
+        .catch(err =>{
+            console.log("Authentication Aborted. An error occured during user lookup:\n",err)
+            return done(err)
+        })
+    }
+))
+
+//-- writing/reading tokens
+passport.serializeUser(function(user,done) {
+    console.log("Serializing user:",user)
+
+    //@ts-ignore
+    done(null,user._id)
+})
+
+passport.deserializeUser(async function(id:any, done) {
+    console.log("deserializing user based on id:",id)
+    try{
+        const user = await Admin.findById(id).exec()
+        if (user === null){
+            //return a false user to passport if no user was found
+            done(null,false)
+        } 
+            
+        else{
+            console.log("Found User in deserialize:",user)
+            //provide passport with the matching user
+            done(null, user)
+        }
+            
+    }
+
+    catch(err){
+        done(err)
+    }
+    
+})
+
+
+
+//route: create new Admin (unused)
+app.post("/create-admin", (req,res) =>{
+    
+    try {
+        console.log("request body data:\n",req.body)
+        const hashedPassword = hashPassword(req.body.password)
+        .then((result)=>{
+            console.log("result:\n",result)
+            console.log("hashed Passwrd:\n",hashedPassword)
+
+            const newAdmin = new Admin({
+                username: req.body.username,
+                password: result
+        
+            })
+            console.log("created Admin:\n",newAdmin)
+        
+            newAdmin.save() //thenable, but not a promise ;)
+            .then( ()=>{
+                console.log(`Saving new Admin: 
+                    \nusername: ${newAdmin.username} 
+                    \npassword: ${req.body.password} 
+                    \nhashed password: ${newAdmin.password}`)
+                
+                res.status(201)
+                res.send(`New admin added: ${newAdmin.username}`)
+            })
+        })
+        .catch(err =>{
+            console.log("Error encountered during hash:\n",err)
+            res.status(500)
+            res.send(`error detected: ${err}`)
+        })
+    }
+    catch(err){
+        console.log("Error encountered:\n",err)
+        res.status(500)
+        res.send(`error detected: ${err}`)
+    }
+})
+
+
+//route: login
+app.post("/login", passport.authenticate('local'), (req,res) =>{
+
+    
+    req.logIn(req.user, (possibleLoginError:any)=>{
+        if (possibleLoginError){
+            console.log(possibleLoginError)
+            res.status(500)
+            res.send("Error occured with login")
+        }
+        else{
+            //@ts-ignore
+            console.log(`Login successful for ${req.user.username}` )
+            
+            res.status(200)
+            //@ts-ignore
+            res.send(req.user.username)
+        }
+            
+    })
+    
+    
+})
+
+//route: logout
+app.post("/logout", (req,res) =>{
+    console.log("Logout Visited:")
+    console.log("User:",req.user)
+
+    if (req.user){
+        //@ts-ignore
+        const username = req.user.Username
+
+        req.logOut((possibleErr)=>{
+            if (possibleErr){
+                console.log("Error while attempting LOGOUT:\n",possibleErr)
+                res.status(500)
+                res.send("Error while attempting Logout")
+            }
+            else{
+                //@ts-ignore
+                console.log("User Logged Out")
+                res.status(200)
+                res.send('Log out Successful')
+            }
+        })
+    }
+
+    else{
+        res.status(200)
+        res.send("Respecting Log out (no user currently logged in)")
+    }
+    
+    
+    
+})
+
+
+//route: visit server
 app.get('/' ,(request,response)=>{
     response.send('<h1>HelloWorld</h1>')
 })
 
-//get all entries in collection
+//route: get all entries in collection
 app.get(`/${dbEntryCollectionName}`, (request, response)=>{
+    console.log("Get Collection Visited:")
+    console.log("user:",request.user)
 
     journalEntry.find({}).then( result =>{
         const entryCollection = result
@@ -67,7 +306,7 @@ app.get(`/${dbEntryCollectionName}`, (request, response)=>{
     })
 })
 
-//get a specific entry
+//route: get a specific entry
 app.get(`/${dbEntryCollectionName}/:id`, (request, response)=>{
 
     const id = request.params.id
@@ -99,15 +338,7 @@ app.get(`/${dbEntryCollectionName}/:id`, (request, response)=>{
 })
 
 
-
-async function findEntryInDB(entry:any){
-
-    console.log(`Searching db for entry with id '${entry._id}'...`)
-    const matchingEntry = await journalEntry.findById(entry._id)
-    console.log(`found entry: ${matchingEntry}`)
-    return matchingEntry
-} 
-
+//entry operation utilities
 async function updateEntry(entry:any){
     //console.log(`Attempting to update entry with id '${entry._id}' in db...`)
     //console.log("provided entry:",entry)
@@ -142,53 +373,91 @@ async function deleteEntry(id:string){
     return deletededEntry
 }
 
+//route: update entry
 app.put(`/${dbEntryCollectionName}/:entry`, (req,res)=>{
-    const fullEntry = req.body
+    console.log("Update Visited:")
+    console.log("user:",req.user)
 
-    try {
-        updateEntry(fullEntry)
-        res.send(`update successful`).status(200)
+    if (req.user){
+        const fullEntry = req.body
 
-        
-    } catch (error) {
-        console.log("an error occured while attempting to update the entry within the db:",error)
-        console.log("============== Server still running! ============")
-        res.send(`an error occured while communicating with the db: ${error}`).status(500)
+        try {
+            updateEntry(fullEntry)
+            res.status(200)
+            res.send(`update successful`)
+
+            
+        } catch (error) {
+            console.log("an error occured while attempting to update the entry within the db:",error)
+            console.log("============== Server still running! ============")
+            res.status(500)
+            res.send(`an error occured while communicating with the db: ${error}`)
+        }
+    }
+    else
+    {
+        res.status(401)
+        res.send("Only admins may edit entries")
     }
 })
 
-app.post(`/${dbEntryCollectionName}`,(req,res)=>{
-    const providedEntry = req.body
-    try{
-        const savedEntry = saveEntry(providedEntry)
-        res.json(savedEntry).status(200)
+//route: add entry
+app.post(`/${dbEntryCollectionName}`, (req,res)=>{
+    console.log("Post Visited:")
+    console.log("user:",req.user)
+
+    if (req.user){
+        const providedEntry = req.body
+        try{
+            const savedEntry = saveEntry(providedEntry)
+            res.json(savedEntry).status(200)
+        }
+        catch(error){ 
+            console.log("an error occured while attempting to create the entry within the db:",error)
+            console.log("============== Server still running! ============")
+            res.send(`an error occured while communicating with the db: ${error}`).status(500)
+        }
     }
-    catch(error){ 
-        console.log("an error occured while attempting to create the entry within the db:",error)
-        console.log("============== Server still running! ============")
-        res.send(`an error occured while communicating with the db: ${error}`).status(500)
+    else
+    {
+        res.status(401)
+        res.send("Only admins may create entries")
     }
+    
     
 })
 
+//route: remove entry
 app.delete(`/${dbEntryCollectionName}/:id`, (req,res)=>{
-    const id = req.params.id
-    try {
-        const deletedEntry = deleteEntry(id)
-        if (deletedEntry === null)
-        {
-            res.send(`couldn't find entry with id '${id}'`).status(404)
-        } 
-        else{
-            res.json(deletedEntry).status(200)
+    console.log("Delete Visited:")
+    console.log("user:",req.user)
+    if (req.user){
+        const id = req.params.id
+        try {
+            const deletedEntry = deleteEntry(id)
+            if (deletedEntry === null)
+            {
+                res.send(`couldn't find entry with id '${id}'`).status(404)
+            } 
+            else{
+                res.json(deletedEntry).status(200)
+            }
+        } catch (error) {
+            console.log("an error occured while attempting to delete an entry within the db:",error)
+            console.log("============== Server still running! ============")
+            res.send(`an error occured while communicating with the db: ${error}`).status(500)
         }
-    } catch (error) {
-        console.log("an error occured while attempting to delete an entry within the db:",error)
-        console.log("============== Server still running! ============")
-        res.send(`an error occured while communicating with the db: ${error}`).status(500)
     }
+    else{
+        res.status(401)
+        res.send("Only admins may delete entries")
+    }
+
+
+    
 })
 
+//route(DEBUG): returns a specified response, depending on the reqested status code
 app.get(`/debug_status_codes/:desiredCode`,(req,res)=>{
     console.log(`DEBUG ADDRESS VISITED. REQUESTED CODE: '${req.params.desiredCode}'`)
 
@@ -232,6 +501,6 @@ app.get(`/debug_status_codes/:desiredCode`,(req,res)=>{
 
 
 
-const PORT = process.env.PORT || 8080
+
 app.listen(PORT)
 console.log(`server running on port ${PORT}`)
