@@ -23,7 +23,8 @@ const PORT = process.env.PORT || 8080
 //use express & express json util
 const app = express()
 app.use(express.json())
-
+if (appMode == "prod")
+    app.set('trust proxy',true)
 
 //determine the cors origin via build mode (either dev or production)
 let corsOriginOption = ''
@@ -233,6 +234,7 @@ app.post("/create-admin", (req,res) =>{
 //route: login
 app.post("/login", passport.authenticate('local'), (req,res) =>{
 
+
     
     req.logIn(req.user, (possibleLoginError:any)=>{
         if (possibleLoginError){
@@ -243,6 +245,7 @@ app.post("/login", passport.authenticate('local'), (req,res) =>{
         else{
             //@ts-ignore
             console.log(`Login successful for ${req.user.username}` )
+            
             
             res.status(200)
             //@ts-ignore
