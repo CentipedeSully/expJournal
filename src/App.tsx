@@ -425,6 +425,35 @@ function App() {
         setLoginErr("Incorrect Login Credentials")
       })
     }
+
+    else{
+      const signinData = 
+      {
+        username:user,
+        password:pass
+      }
+
+      axios.post(import.meta.env.VITE_PROD_BACKEND + '/login',signinData)
+
+      .then((response)=>{
+        if (handleResponse(response) === ResponseResults.success){
+          console.log(response)
+          setAuth(true)
+          setUser(user)
+          setGuestStatus(false)
+          setLoginErr('')
+        }
+        else{
+          console.log("Response recieved, client issue")
+          setLoginErr("Incorrect Login Credentials")
+          
+        }
+      })
+      .catch(error =>{
+        console.log("An unexpected error occurred",error)
+        setLoginErr("Incorrect Login Credentials")
+      })
+    }
   }
 
   const logout = ()=>{

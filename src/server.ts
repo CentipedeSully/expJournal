@@ -187,7 +187,10 @@ passport.deserializeUser(async function(id:any, done) {
 
 //route: create new Admin (unused)
 app.post("/create-admin", (req,res) =>{
-    
+    if (appMode === "prod"){
+        res.status(401)
+        res.send("Forbidden Route Reached. Admin may only be created in Devmode")
+    }
     try {
         console.log("request body data:\n",req.body)
         const hashedPassword = hashPassword(req.body.password)
