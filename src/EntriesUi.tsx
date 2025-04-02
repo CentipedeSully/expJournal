@@ -394,14 +394,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                 key:'0',
                 value:'Type in a title to narrow down the entries by title. ' + 
                     'Entry titles are not unique, meaning many different entries with similar title may exist. ' + 
-                    'Add greater specificity by adding more keywords and a category to the query.'
-            },
-            {
-                key:'1',
-                value:'When adding a title, the collection will update itself immediately. No added validation is necessary. '+
-                    'When adding a keyword or category to the query however, confirm the addition using the [+] button. '+ 
-                    'A visual representation of the new query element will appear in the "Filter Settings" area, and then the collection will apply the query and update itself. '+
-                    'To remove a query word, hover over the word and click the [-] button. The collection will then apply the edtied query and update itself'
+                    'Add greater specificity by toggling relevant keyword & category labels via clicking on them.'
             }]
         },
         {
