@@ -6,6 +6,8 @@ import { useState, useEffect } from "react"
 
 interface EntryUiProps{
     collection:entryDefs.Entry[],
+    keywords:string[],
+    categories:string[],
     dbOperationCode:number
     handleWriteNewEntry:any,
     handleClickEntry:any,
@@ -20,51 +22,51 @@ const EntriesUi = (props:EntryUiProps)=> {
 
     const [viewableEntries,setView] = useState(props.collection)
     const [titleFilter,setTitleFilter] = useState('')
-    const [keywordCollection,setKeywordCollection] = useState([])
-    const [categoryCollection,setCategoryCollection] = useState([])
+    const [appliedKeywordsCollection,setAppliedKeywordsCollection] = useState([])
+    const [appliedCategoryCollection,setAppliedCategoryCollection] = useState([])
 
     useEffect(()=>{
-        UpdateView(titleFilter,keywordCollection,categoryCollection)
+        UpdateView(titleFilter,appliedKeywordsCollection,appliedCategoryCollection)
     },[props.collection])
 
 
     const addKeyword = (newKeyword:string) =>{
-        if (!keywordCollection.includes(newKeyword)){
-            const newKeyCollection = keywordCollection.concat(newKeyword)
-            setKeywordCollection(newKeyCollection)
+        if (!appliedKeywordsCollection.includes(newKeyword)){
+            const newKeyCollection = appliedKeywordsCollection.concat(newKeyword)
+            setAppliedKeywordsCollection(newKeyCollection)
 
             //refilter the view
-            UpdateView(titleFilter,newKeyCollection,categoryCollection)
+            UpdateView(titleFilter,newKeyCollection,appliedCategoryCollection)
         }
     } 
     const removeKeyword = (keyword:string) => {
-        if (keywordCollection.includes(keyword)){
-            const newKeyCollection = keywordCollection.filter((word)=> word!==keyword)
-            setKeywordCollection(newKeyCollection)
+        if (appliedKeywordsCollection.includes(keyword)){
+            const newKeyCollection = appliedKeywordsCollection.filter((word)=> word!==keyword)
+            setAppliedKeywordsCollection(newKeyCollection)
             
             //refilter the view
-            UpdateView(titleFilter,newKeyCollection,categoryCollection)
+            UpdateView(titleFilter,newKeyCollection,appliedCategoryCollection)
         }
     }
 
     const addCategory = (newCategory:string) => {
-        if (!categoryCollection.includes(newCategory)){
-            const newCatCollection = categoryCollection.concat(newCategory)
-            setCategoryCollection(newCatCollection)
+        if (!appliedCategoryCollection.includes(newCategory)){
+            const newCatCollection = appliedCategoryCollection.concat(newCategory)
+            setAppliedCategoryCollection(newCatCollection)
 
             
             //refilter
-            UpdateView(titleFilter,keywordCollection,newCatCollection)
+            UpdateView(titleFilter,appliedKeywordsCollection,newCatCollection)
         }
     }
 
     const removeCategory = (category:string) => {
-        if (categoryCollection.includes(category)){
-            const newCatCollection = categoryCollection.filter((word)=> word!==category)
-            setCategoryCollection(newCatCollection)
+        if (appliedCategoryCollection.includes(category)){
+            const newCatCollection = appliedCategoryCollection.filter((word)=> word!==category)
+            setAppliedCategoryCollection(newCatCollection)
 
             //refilter
-            UpdateView(titleFilter,keywordCollection,newCatCollection)
+            UpdateView(titleFilter,appliedKeywordsCollection,newCatCollection)
         }
 
         
@@ -75,7 +77,7 @@ const EntriesUi = (props:EntryUiProps)=> {
         setTitleFilter(title)
 
         //refilter the view
-        UpdateView(title,keywordCollection,categoryCollection)
+        UpdateView(title,appliedKeywordsCollection,appliedCategoryCollection)
         
     }
 
@@ -113,8 +115,10 @@ const EntriesUi = (props:EntryUiProps)=> {
             handleRemoveCategoryFromFilter={removeCategory}
             handleAddKeywordToFilter={addKeyword}
             handleRemoveKeywordFromFilter={removeKeyword}
-            appliedCategories={categoryCollection}
-            appliedKeywords={keywordCollection}/>
+            appliedCategories={appliedCategoryCollection}
+            appliedKeywords={appliedKeywordsCollection}
+            categories={props.categories}
+            keywords={props.keywords}/>
         <CollectionDisplay 
             collection={viewableEntries} 
             messageCode={props.dbOperationCode}
@@ -168,62 +172,32 @@ interface filterProps{
     handleRemoveKeywordFromFilter:any,
     handleAddCategoryToFilter:any,
     handleRemoveCategoryFromFilter:any,
+    categories:string[],
     appliedCategories:string[],
-    appliedKeywords:string[],
+    keywords:string[],
+    appliedKeywords:string[]
 
 }
 
 const FilterArea = (props:filterProps) =>{
 
 
-    const [catVisibility,setCatVisibility] = useState(props.appliedCategories.length > 0)
-    const [keyVisibility,setKeyVisibility] = useState(props.appliedKeywords.length > 0)
-    const [keyword,setKeyword] = useState('')
-    const [category,setCategory] = useState('')
+    const [catVisibility,setCatVisibility] = useState(props.categories.length > 0)
+    const [keyVisibility,setKeyVisibility] = useState(props.keywords.length > 0)
 
-    const updateKeyword = (event:any) =>{
-        const newKeyword = event.target.value
-        setKeyword(newKeyword)
-    }
-
-    const updateCategory = (event:any) =>{
-        const newCategory = event.target.value
-        setCategory(newCategory)
-    }
     
     useEffect(()=>{
-        setCatVisibility(props.appliedCategories.length > 0)
-        setKeyVisibility(props.appliedKeywords.length > 0)
-    }, [props.appliedCategories, props.appliedKeywords])
+        setCatVisibility(props.categories.length > 0)
+        setKeyVisibility(props.keywords.length > 0)
+    }, [props.categories, props.keywords])
 
     const showOnNone = catVisibility||keyVisibility ? " hidden" : " visible"
     const showOnAny = catVisibility||keyVisibility ? " visible" : " hidden"
     const categoryVisibility = catVisibility ? " visible" : " hidden"
     const keywordsVisibility = keyVisibility ? " visible" : " hidden"
-    const lgCatColumns = props.appliedCategories.length === 1 ? "columns-1" : "columns-2"
-    const lgKeyColumns = props.appliedKeywords.length === 1 ? "columns-1" : "columns-2"
+    const filterActiveClass = "rounded text-sm hover:bg-yellow-500 w-30 overflow-x-auto bg-orange-800 px-2 border hover:text-gray-950"
+    const filterInactiveClass = "rounded text-sm hover:bg-amber-950 w-30 overflow-x-auto bg-gray-800 px-2"
 
-    
-
-    const calcLxCatColumns = ():string=>{
-
-        const categories = props.appliedCategories.length
-        if (categories === 0)
-            return "columns-1"
-        else if (categories<3)
-            return `columns-${categories}`
-        else return 'columns-3'
-    }
-
-    const calcLxKeyColumns = ():string=>{
-
-        const keywords = props.appliedKeywords.length
-        if (keywords === 0)
-            return "columns-1"
-        else if (keywords<3)
-            return `columns-${keywords}`
-        else return 'columns-3'
-    }
 
 
     const throwNewTitle = (event:any) =>{
@@ -231,23 +205,36 @@ const FilterArea = (props:filterProps) =>{
         props.handleTitleInputChange(newTitle)
     }
 
-    const removeKeywordLabel = (event:any) =>{
+    const toggleCategory = (event:any) =>{
         const closest = event.target.closest("li")
-        props.handleRemoveKeywordFromFilter(closest.id.slice("keyword-filter-item-".length))
+        const catName = closest.id.slice("category-filter-item-".length)
         
+        if (props.appliedCategories.includes(catName)){
+            props.handleRemoveCategoryFromFilter(catName)
+            closest.className = filterInactiveClass
+        }
+            
+        else {
+            props.handleAddCategoryToFilter(catName)
+            closest.className = filterActiveClass
+        }
     }
 
-    const removeCategoryLabel = (event:any) =>{
+    const toggleKeyword = (event:any)=>{
         const closest = event.target.closest("li")
-        props.handleRemoveCategoryFromFilter(closest.id.slice("category-filter-item-".length))
-    }
+        const keyName = closest.id.slice("keyword-filter-item-".length)
 
-    const addKeyword = () =>{
-        props.handleAddKeywordToFilter(keyword)
-    }
+        if (props.appliedKeywords.includes(keyName)){
+            props.handleRemoveKeywordFromFilter(keyName)
+            closest.className = filterInactiveClass
 
-    const addCategory= () =>{
-        props.handleAddCategoryToFilter(category)
+        }
+            
+        else {
+            props.handleAddKeywordToFilter(keyName)
+            closest.className = filterActiveClass
+
+        }
     }
 
     return (
@@ -275,41 +262,8 @@ const FilterArea = (props:filterProps) =>{
                                     >+</button>
                                 </div>
                                 
-                                
                                 <label className="text-sm text-center" htmlFor='title-filter-input'>Title</label>
                             </div>
-                        </div>
-
-                        <div className="flex flex-col items-center">
-                            <div className="flex flex-row gap-1 ">
-                                <input 
-                                    id="category-filter-input" 
-                                    type="text" 
-                                    className=" bg-gray-700 rounded "
-                                    onChange={updateCategory}/>
-                                <button 
-                                    className='rounded bg-blue-800 hover:bg-blue-950 px-2 text-sm'
-                                    onClick={addCategory}
-                                    type="button"
-                                >+</button>
-                            </div>
-                            <label className="text-sm" htmlFor='category-filter-input'>Category</label>
-                        </div>
-
-                        <div className="flex flex-col items-center">
-                            <div className="flex flex-row gap-1">
-                                <input 
-                                    id='keyword-filter-input' 
-                                    type="text" 
-                                    className=" bg-gray-700 rounded"
-                                    onChange={updateKeyword}/>
-                                <button 
-                                    className='rounded bg-blue-800 hover:bg-blue-950 px-2 text-sm'
-                                    onClick={addKeyword}
-                                    type="button"
-                                    >+</button>
-                                </div>
-                            <label className="text-sm" htmlFor='keyword-filter-input'>Keyword</label>
                         </div>
 
                     </form>
@@ -321,34 +275,23 @@ const FilterArea = (props:filterProps) =>{
                 <div className=" pb-3 hover:bg-gray-900 w-full ">
                     <div className={"flex flex-col h-full "}>
 
-                        <p className={"pb-5 text-center my-auto" + showOnNone}>( No category/keyword applied )</p>
+                        <p className={"pb-5 text-center my-auto" + showOnNone}>( No category/keyword exists )</p>
 
                         <div className={"flex flex-row justify-evenly py-3 text-center" + showOnAny}>
                             <div className={categoryVisibility + ""}>
                                 <p>Categories</p>
-                                <ul className={"h-30 rounded overflow-auto whitespace-nowrap space-y-1.5 pt-0.5 " + `lg:${lgCatColumns} lx:${calcLxCatColumns()}`}>
-                                { props.appliedCategories.map((word)=>{ 
+                                <ul className={"h-30 rounded overflow-y-auto whitespace-nowrap space-y-1.5 pt-0.5 lg:columns-2"}>
+                                { props.categories.map((word)=>{ 
 
                                     const elementId = 'category-filter-item-' + word
                                     return(
 
                                         <li 
-                                            className='rounded text-sm hover:bg-amber-950 w-30  overflow-x-auto bg-gray-800 px-2'
+                                            className={filterInactiveClass}
                                             key={word}
-                                            id={elementId}>
-                                            <div className="flex flex-row justify-end gap-1">
-                                                <span className="w-full text-start overflow-x-auto">
-                                                    {word}
-                                                </span>
-                                                <span>
-                                                    <button 
-                                                        className="rounded  hover:bg-red-900  whitespace-nowrap"
-                                                        onClick={removeCategoryLabel}
-                                                        type="button"
-                                                    >( - )</button>
-                                                </span>
-                                            </div>
-                                            
+                                            id={elementId}
+                                            onClick={toggleCategory}>
+                                            {word}
                                         </li>
                                     )})}
                                 </ul>
@@ -356,29 +299,18 @@ const FilterArea = (props:filterProps) =>{
 
                             <div className={ keywordsVisibility}>
                                 <p>Keywords</p>
-                                <ul className={"h-30 rounded overflow-y-auto whitespace-nowrap space-y-1.5 pt-0.5 " + `lg:${lgKeyColumns} lx:${calcLxKeyColumns()}`}>
-                                    { props.appliedKeywords.map((word)=>{ 
+                                <ul className={"h-30 rounded overflow-y-auto whitespace-nowrap space-y-1.5 pt-0.5 lg:columns-2"}>
+                                    { props.keywords.map((word)=>{ 
 
                                         const elementId = 'keyword-filter-item-' + word
                                         return(
 
                                             <li 
-                                                className='rounded text-sm hover:bg-amber-950 w-30 overflow-x-auto bg-gray-800 px-2 '
+                                                className={filterInactiveClass}
                                                 key={word}
-                                                id={elementId}>
-                                                <div className="flex flex-row justify-end gap-1">
-                                                    <span className="w-full text-start overflow-x-auto">
-                                                        {word}
-                                                    </span>
-                                                    <span>
-                                                        <button 
-                                                            className="rounded hover:bg-red-900 whitespace-nowrap"
-                                                            onClick={removeKeywordLabel}
-                                                            type="button"
-                                                        >( - )</button>
-                                                    </span>
-                                                </div>
-                                                
+                                                id={elementId}
+                                                onClick={toggleKeyword}>
+                                                {word}
                                             </li>
                                     )})}
                                 </ul>

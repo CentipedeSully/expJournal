@@ -26,6 +26,7 @@ axios.defaults.withCredentials = true
 
 function App() { 
 
+  
 
   const handleResponse = (response:AxiosResponse) =>{
     const status = response.status
@@ -72,6 +73,28 @@ function App() {
         if (handleResponse(response) === ResponseResults.success){
           setDbCode(2)
           setCollection(response.data)
+
+          //build the list of all possible categories
+          const catList = response.data.map((entry:any)=>{
+            return entry.categories
+          }).reduce((accumulator:any,currentList:any)=>{
+            return accumulator.concat(currentList)
+          },[])
+
+          const uniqueCatList = [...new Set(catList)]
+          setCategories(uniqueCatList)
+
+          //build the list of all possible keywords
+          const keyList = response.data.map((entry:any)=>{
+            return entry.keywords
+          }).reduce((accumulator:any,currentList:any)=>{
+            return accumulator.concat(currentList)
+          },[])
+
+          const uniqueKeyList = [...new Set(keyList)]
+          setKeywords(uniqueKeyList)
+
+
         }
         else{
           setDbCode(3)
@@ -262,6 +285,8 @@ function App() {
   }
 
   const [entries,setCollection] = useState([emptyEntry])
+  const [keywords,setKeywords] = useState([])
+  const [categories,setCategories] = useState([])
   const [viewedEntry, setViewedEntry] = useState(emptyEntry)
   const [showEntryWindow,setShowEntryWindow] = useState(false)
   const [ignoreClicks, setIgnoreClicks] = useState(false)
@@ -288,6 +313,10 @@ function App() {
   useEffect(()=>{
     getCollectionFromDb()
   },[])
+
+  useEffect(()=>{
+
+  },[keywords, categories])
     
   const enterAsGuest = () =>{
     setUser("Guest")
@@ -509,6 +538,8 @@ function App() {
           />
         <EntriesUi 
           collection={entries} 
+          categories={categories}
+          keywords={keywords}
           dbOperationCode={dbOperationCode}
           handleWriteNewEntry={showEmptyModal}
           handleClickEntry={viewEntryInModal}
