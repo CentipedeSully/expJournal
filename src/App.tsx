@@ -115,6 +115,26 @@ function App() {
         if (handleResponse(response) === ResponseResults.success){
           setDbCode(2)
           setCollection(response.data)
+
+          //build the list of all possible categories
+          const catList = response.data.map((entry:any)=>{
+            return entry.categories
+          }).reduce((accumulator:any,currentList:any)=>{
+            return accumulator.concat(currentList)
+          },[])
+
+          const uniqueCatList = [...new Set(catList)]
+          setCategories(uniqueCatList)
+
+          //build the list of all possible keywords
+          const keyList = response.data.map((entry:any)=>{
+            return entry.keywords
+          }).reduce((accumulator:any,currentList:any)=>{
+            return accumulator.concat(currentList)
+          },[])
+
+          const uniqueKeyList = [...new Set(keyList)]
+          setKeywords(uniqueKeyList)
         }
         else{
           setDbCode(3)
