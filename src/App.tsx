@@ -123,6 +123,7 @@ function App() {
             return accumulator.concat(currentList)
           },[])
 
+          console.log("catList: ",catList)
           const uniqueCatList = [...new Set(catList)]
           setCategories(uniqueCatList)
 
@@ -132,6 +133,7 @@ function App() {
           }).reduce((accumulator:any,currentList:any)=>{
             return accumulator.concat(currentList)
           },[])
+          console.log("keyList: ",keyList)
 
           const uniqueKeyList = [...new Set(keyList)]
           setKeywords(uniqueKeyList)
