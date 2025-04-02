@@ -95,6 +95,8 @@ const EntriesUi = (props:EntryUiProps)=> {
             return keywords.every(keyword => entry.keywords.includes(keyword))})
 
         //console.log("Title, Category, & Keyword filtered entries:",titCatKeyFilteredView)
+
+        
         setView(titCatKeyFilteredView)
     }
 
@@ -137,12 +139,12 @@ interface headerProps{
 const CollectionHeader = (props:headerProps) =>{
     return(
         <div className="px-10">
-            <div className="flex flex-row space-x-5">
+            <div className="flex flex-row justify-center md:justify-start space-x-5">
                 <h1 className="text-4xl">Archive</h1>
                 
-                <div className="flex flex-row text-sm mt-auto space-x-1">
+                <div className="flex flex-row text-sm mt-auto  space-x-1">
                     <p>[ </p>
-                    <p className="text-amber-600"> Viewing as '{props.user}' </p>
+                    <p className="text-amber-600 whitespace-nowrap"> Viewing as '{props.user}' </p>
                     <p> ]</p>
                 </div>
 
@@ -252,13 +254,13 @@ const FilterArea = (props:filterProps) =>{
         <div className="py-4">
 
             <p className="text-center pb-1">-- Filter Settings --</p>
-            <div className="flex sm:flex-col md:flex-row-reverse lg:flex-row-reverse border rounded">
+            <div className="flex flex-col md:flex-row-reverse lg:flex-row-reverse border rounded">
 
                 <div className="hover:bg-gray-900 px-6 pt-5 pb-3">
                     <form action="" className="flex flex-col gap-3">
 
                         <div>
-                            <div className="flex flex-col sm:items-center">
+                            <div className="flex flex-col items-center">
                                 <div>
                                     <input 
                                         id='title-filter-input' 
@@ -313,7 +315,7 @@ const FilterArea = (props:filterProps) =>{
                     </form>
                 </div>
                 
-                <hr className="sm:visible md:hidden lg:hidden"/>
+                <hr className="visible md:hidden"/>
 
 
                 <div className=" pb-3 hover:bg-gray-900 w-full ">
@@ -681,8 +683,8 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
     return (
         <div>
-            <div id="content-area" className="flex gap-2 sm:flex-col-reverse md:flex-col-reverse lg:flex-row xl:flex-row">
-                <div id="guide-area " className="sm:w-full md:w-full lg:w-1/2 xl:w-1/2">
+            <div id="content-area" className="flex gap-2 flex-col-reverse lg:flex-row">
+                <div id="guide-area " className="w-full lg:w-1/2">
                     <div  id="guide-header" className="flex flex-row justify-between px-10 pb-1">
                         <h2>Guide</h2>
                         
@@ -712,7 +714,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                     </div>
                 </div>
 
-                <div id="entry-area" className="sm:w-full md:w-full lg:w-1/2 xl:w-1/2">
+                <div id="entry-area" className="sm:w-full lg:w-1/2">
                     <div  id="entry-header" className="flex flex-row justify-between px-10 pb-1">
                         <div>
                             <h2>Entries</h2>                            
@@ -731,7 +733,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                         </div>
                     </div>
                     
-                    <div id="entry-list" className="border rounded h-50">
+                    <div id="entry-list" className="border rounded h-50 overflow-y-auto">
                         <ul className={""} >
                             {props.collection.map((entry)=>{
                                 return (

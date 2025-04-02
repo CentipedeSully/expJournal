@@ -79,7 +79,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
   const updateContentFromEditor = (html:any) => {
     const newContent = html
-    console.log("Received updated HTML(outside the editor, within the overlay):\n",html)
+    //console.log("Received updated HTML(outside the editor, within the overlay):\n",html)
     setContent(newContent)
 
     //console.log("Updated html:",html)
@@ -142,11 +142,23 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
   return(
     <div id="entry-modal" className={"z-10 w-3/4 mx-auto my-auto absolute  inset-x-0 rounded border bg-bluesteel" + visibilityString}>
 
-      <form className="h-110 flex flex-row space-x-1 px-4 my-4" onSubmit={(event)=>{event.preventDefault()}}>
-        <div id="modal-side-area" className=" w-1/4 flex flex-col justify-evenly">
+      <form className=" lg:h-110 flex flex-col md:flex-row space-x-1 px-4 my-4" onSubmit={(event)=>{event.preventDefault()}}>
+
+        <div id="modal-header-buttons-sm" className="visible md:hidden flex flex-row justify-center space-x-4 ">
+          <SmallButton 
+              label={"Back"}
+              onClick={cleanUpAndExit}
+          />
+          <SmallButton 
+              label={editMode? "Edit: On" : "Edit: Off"}
+              onClick={switchEditMode}
+          />
+        </div>
+
+        <div id="modal-side-area" className=" md:w-1/4 flex flex-row md:flex-col justify-evenly">
 
           <div id="modal-side-upper-half" className="flex flex-col h-full justify-between">
-            <div id="modal-header-buttons" className="flex sm:flex-col  md:flex-col lg:flex-row lx:flex-row  justify-center space-x-4 ">
+            <div id="modal-header-buttons-md" className="hidden md:visible md:flex md:flex-col lg:flex-row  md:justify-center space-x-4 ">
               <SmallButton 
                   label={"Back"}
                   onClick={cleanUpAndExit}
@@ -183,8 +195,8 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
             </div>
             
-            <div id="modal-footer-buttons">
-              <div className={"flex sm:flex-col-reverse  md:flex-col lg:flex-row lx:flex-row justify-center space-x-4 " + showIfEditEnabled}>
+            <div id="modal-footer-buttons-md">
+              <div className={"hidden md:flex md:visible md:flex-col lg:flex-row md:justify-center space-x-4 " + showIfEditEnabled}>
                 <PositiveSmallButton 
                     label={"Save"}
                     onClick={saveEntry}
@@ -197,11 +209,22 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
             </div>
             
           </div>
-              
+   
+        </div>
+
+        <div id="modal-footer-buttons-sm" className={"visible md:hidden flex flex-row justify-center space-x-4 " + showIfEditEnabled}>
+          <PositiveSmallButton 
+              label={"Save"}
+              onClick={saveEntry}
+          />
+          <NegativeSmallButton 
+              label={"Delete"}
+              onClick={deleteEntry}
+          />
         </div>
 
 
-        <div id="modal-main-area" className=" ml-2 rounded w-3/4">
+        <div id="modal-main-area" className="pt-5 md:pt-0 ml-2 rounded md:w-3/4">
           <div id="modal-header-area" className="flex flex-row justify-between space-x-2 mb-3">
 
             <p id="modal-original-title" className={"text-2xl overflow-x-auto whitespace-nowrap" + showIfEditDisabled}>{props.entryObj.title}</p>

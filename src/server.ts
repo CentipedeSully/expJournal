@@ -296,6 +296,23 @@ app.get('/' ,(request,response)=>{
     response.send('<h1>HelloWorld</h1>')
 })
 
+//quick function to return the latest entry 
+// (Ripped mostly from google. Didn't wanna spend an hour writing a date-sorting algorithm XD )
+// (thanks Google)
+function sortEntriesByLatestDate(entries:any[]) {
+    let sortedEntries = entries.sort((a, b) => {
+      const [monthA, dayA, yearA] = a.dateMMDDYYYY.split('/').map(Number);
+      const [monthB, dayB, yearB] = b.dateMMDDYYYY.split('/').map(Number);
+  
+      const dateA:any = new Date(yearA, monthA - 1, dayA); // Month is 0-indexed
+      const dateB:any = new Date(yearB, monthB - 1, dayB);
+  
+      return dateA - dateB;
+    });
+
+    return sortedEntries.reverse();
+  }
+
 //route: get all entries in collection
 app.get(`/${dbEntryCollectionName}`, (request, response)=>{
     console.log("Get Collection Visited:")
@@ -304,8 +321,17 @@ app.get(`/${dbEntryCollectionName}`, (request, response)=>{
     journalEntry.find({}).then( result =>{
         const entryCollection = result
 
-        response.json(entryCollection)
-        response.status(200)
+        if (result.length > 1){
+            response.status(200)
+            response.json(sortEntriesByLatestDate(result))
+        }
+
+        else {
+            response.status(200)
+            response.json(entryCollection)
+        }
+        
+        
     })
     .catch((error) =>{
         response.send(`error processing request: ${error}`).status(500)
