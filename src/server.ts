@@ -57,7 +57,7 @@ const sessionOptions = {
         httpOnly: true,
         sameSite: appMode === "prod" ? "none" : "lax", // cross site // set lax while working with http:localhost, but none when in prod
         secure: appMode === "prod" ? true : "auto", // only https // auto when in development, true when in prod
-        maxAge: 60000 * 60 //1hr
+        maxAge: 60000 * 60 * 8 //8hrs
     }
 }
 //@ts-ignore
