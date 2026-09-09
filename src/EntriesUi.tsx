@@ -566,7 +566,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
 
 
         return(
-            <div className="overflow-y-auto h-38">
+            <div className="overflow-y-auto">
                 {props.bodyContentList.map((contentItem)=>{
                     return(
                         <div key={contentItem.key}>
@@ -631,7 +631,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                         </div>
                     </div>
 
-                    <div id="guide-body" className="border rounded h-50 hover:bg-gray-900">
+                    <div id="guide-body" className="border rounded hover:bg-gray-900">
                         <div className="px-5 py-1">
                             <GuideHeader title={guideTitle} titleTip={guideTip}/>
                             <GuideBody bodyContentList={guideBody} />
@@ -658,7 +658,7 @@ const CollectionDisplay = (props:CollectionDisplayProps)=>{
                         </div>
                     </div>
                     
-                    <div id="entry-list" className="border rounded h-50 overflow-y-auto">
+                    <div id="entry-list" className="border rounded overflow-y-auto min-h-10">
                         <ul className={""} >
                             {props.collection.map((entry)=>{
                                 return (
