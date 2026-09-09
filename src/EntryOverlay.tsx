@@ -140,9 +140,9 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
 
 
   return(
-    <div id="entry-modal" className={"z-10 w-3/4 mx-auto my-auto absolute  inset-x-0 rounded border bg-bluesteel" + visibilityString}>
+    <div id="entry-modal" className={"z-10 w-3/4 mx-auto mt-45 absolute inset-x-0 rounded border bg-bluesteel" + visibilityString}>
 
-      <form className=" lg:h-110 flex flex-col md:flex-row space-x-1 px-4 my-4" onSubmit={(event)=>{event.preventDefault()}}>
+      <form className=" flex flex-col md:flex-row space-x-1 px-4 my-4 h-full" onSubmit={(event)=>{event.preventDefault()}}>
 
         <div id="modal-header-buttons-sm" className="visible md:hidden flex flex-row justify-center space-x-4 ">
           <SmallButton 
@@ -224,7 +224,7 @@ const SoloEntryModal = (props:SoloEntryModalProps)=>{
         </div>
 
 
-        <div id="modal-main-area" className="pt-5 md:pt-0 ml-2 rounded md:w-3/4">
+        <div id="modal-main-area" className="pt-5 md:pt-0 ml-2 rounded md:w-3/4 h-125">
           <div id="modal-header-area" className="flex flex-row justify-between space-x-2 mb-3">
 
             <p id="modal-original-title" className={"text-2xl overflow-x-auto whitespace-nowrap" + showIfEditDisabled}>{props.entryObj.title}</p>
